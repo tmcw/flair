@@ -1,6 +1,9 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Browser
+import Element
+import Element.Font
+import Element.Input
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Set.Any exposing (AnySet)
@@ -86,7 +89,7 @@ ingredients =
 
 type alias Recipe =
     { name : String
-    , ingredients : List Ingredient
+    , ingredients : IngredientSet
     , description : String
     }
 
@@ -95,26 +98,32 @@ recipes : List Recipe
 recipes =
     [ { name = "Old Fashioned"
       , ingredients =
-            [ whiskey
-            , bitters
-            , citrusRind
-            ]
+            Set.Any.fromList
+                ingredientKey
+                [ whiskey
+                , bitters
+                , citrusRind
+                ]
       , description = """Stir"""
       }
     , { name = "Brandy Old Fashioned"
       , ingredients =
-            [ brandy
-            , bitters
-            , citrusRind
-            ]
+            Set.Any.fromList
+                ingredientKey
+                [ brandy
+                , bitters
+                , citrusRind
+                ]
       , description = """Stir"""
       }
     , { name = "Negroni"
       , ingredients =
-            [ gin
-            , sweetRedVermouth
-            , campari
-            ]
+            Set.Any.fromList
+                ingredientKey
+                [ gin
+                , sweetRedVermouth
+                , campari
+                ]
       , description = """Stir"""
       }
     ]
@@ -122,8 +131,7 @@ recipes =
 
 type Msg
     = SelectRecipe Recipe
-    | AddIngredient Ingredient
-    | RemoveIngredient Ingredient
+    | ToggleIngredient Ingredient
 
 
 update : Msg -> Model -> Model
@@ -132,11 +140,8 @@ update msg model =
         SelectRecipe recipe ->
             { model | selectedRecipe = Just recipe }
 
-        AddIngredient ingredient ->
-            { model | availableIngredients = Set.Any.insert ingredient model.availableIngredients }
-
-        RemoveIngredient ingredient ->
-            { model | availableIngredients = Set.Any.remove ingredient model.availableIngredients }
+        ToggleIngredient ingredient ->
+            { model | availableIngredients = Set.Any.toggle ingredient model.availableIngredients }
 
 
 recipeNavigationItem : Recipe -> Html Msg
@@ -153,15 +158,16 @@ ingredientNavigationItem : IngredientSet -> Ingredient -> Html Msg
 ingredientNavigationItem ingredientSet ingredient =
     div []
         [ button
-            [ onClick
+            [ onClick (ToggleIngredient ingredient)
+            ]
+            [ text
                 (if Set.Any.member ingredient ingredientSet then
-                    RemoveIngredient ingredient
+                    ingredient.name ++ " -"
 
                  else
-                    AddIngredient ingredient
+                    ingredient.name ++ " +"
                 )
             ]
-            [ text ingredient.name ]
         ]
 
 
@@ -177,12 +183,17 @@ listRecipes items =
         (List.map recipeNavigationItem items)
 
 
-listAvailableIngredients : IngredientSet -> Html Msg
-listAvailableIngredients items =
-    div []
-        (List.map (ingredientNavigationItem items) (Set.Any.toList items))
+hasIngredients : IngredientSet -> Recipe -> Bool
+hasIngredients availableIngredients recipe =
+    Set.Any.isEmpty (Set.Any.diff recipe.ingredients availableIngredients)
 
 
+whatYouCanMake : IngredientSet -> List Recipe -> List Recipe
+whatYouCanMake availableIngredients allRecipes =
+    List.filter (hasIngredients availableIngredients) allRecipes
+
+
+view : Model -> Html Msg
 view model =
     div []
         [ Html.h2 [] [ text "Recipes" ]
@@ -200,6 +211,6 @@ view model =
                         ""
                 )
             ]
-        , Html.h2 [] [ text "Available ingredients" ]
-        , listAvailableIngredients model.availableIngredients
+        , Html.h2 [] [ text "What you can make with your ingredients" ]
+        , listRecipes (whatYouCanMake model.availableIngredients model.recipes)
         ]
