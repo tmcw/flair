@@ -2,9 +2,10 @@ module Main exposing (Msg(..), main, update, view)
 
 import Basics exposing (degrees)
 import Browser
-import Element exposing (alignTop, padding, paddingEach, paddingXY, rotate, spacing, text)
+import Element exposing (Element, alignTop, el, padding, paddingEach, paddingXY, rotate, spacing, text)
 import Element.Background
-import Element.Font exposing (Font, bold)
+import Element.Border as Border
+import Element.Font as Font exposing (Font, bold, strike)
 import Element.Input as Input
 import Html exposing (Html)
 import Set.Any exposing (AnySet)
@@ -16,6 +17,8 @@ type alias IngredientSet =
 
 type alias Model =
     { recipes : List Recipe
+    , sufficient : List Recipe
+    , insufficient : List Recipe
     , ingredients : List Ingredient
     , selectedRecipe : Maybe Recipe
     , availableIngredients : IngredientSet
@@ -33,7 +36,10 @@ init =
     , ingredients = ingredients
     , selectedRecipe = Nothing
     , availableIngredients = Set.Any.empty ingredientKey
+    , sufficient = []
+    , insufficient = []
     }
+        |> derive
 
 
 main =
@@ -200,8 +206,7 @@ a maraschino cherry."""
                 , ice
                 ]
       , description = """Fill mixing-glass half-full fine ice, add two 
-dashes gum-syrup, two dashes Peyschaud or An- 
-gostura bitters, one half -jigger Italian vermouth, 
+dashes gum-syrup, two dashes Peyschaud or Angostura bitters, one half-jigger Italian vermouth, 
 one-half jigger whiskey . Mix, strain into cocktail-glass.
 Add a piece of lemon-peel or a cherry."""
       }
@@ -215,11 +220,9 @@ Add a piece of lemon-peel or a cherry."""
                 , cider
                 , nutmeg
                 ]
-      , description = """One tablespoonful fine sugar, one egg in mix- 
-ing-glass half-full fine ice ; fill with cider ; mix well, 
+      , description = """One tablespoonful fine sugar, one egg in mixing-glass half-full fine ice ; fill with cider ; mix well, 
 strain into long punch-glass, a little grated nutmeg 
-on top. This drink is also known as General Har- 
-rison Egg-Nogg. """
+on top. This drink is also known as General Harrison Egg-Nogg."""
       }
     ]
 
@@ -229,21 +232,67 @@ type Msg
     | ToggleIngredient Ingredient Bool
 
 
+hasIngredients : IngredientSet -> Recipe -> Bool
+hasIngredients availableIngredients recipe =
+    Set.Any.isEmpty (Set.Any.diff recipe.ingredients availableIngredients)
+
+
+derive : Model -> Model
+derive model =
+    let
+        ( sufficient, insufficient ) =
+            List.partition (hasIngredients model.availableIngredients) model.recipes
+    in
+    { model
+        | sufficient = sufficient
+        , insufficient = insufficient
+    }
+
+
 update : Msg -> Model -> Model
 update msg model =
-    case msg of
-        SelectRecipe recipe ->
-            { model | selectedRecipe = Just recipe }
+    derive
+        (case msg of
+            SelectRecipe recipe ->
+                { model | selectedRecipe = Just recipe }
 
-        ToggleIngredient ingredient checked ->
-            { model
-                | availableIngredients =
-                    if checked then
-                        Set.Any.insert ingredient model.availableIngredients
+            ToggleIngredient ingredient checked ->
+                { model
+                    | availableIngredients =
+                        if checked then
+                            Set.Any.insert ingredient model.availableIngredients
 
-                    else
-                        Set.Any.remove ingredient model.availableIngredients
-            }
+                        else
+                            Set.Any.remove ingredient model.availableIngredients
+                }
+        )
+
+
+background =
+    Element.rgb255 249 247 244
+
+
+black =
+    Element.rgb 0 0 0
+
+
+checkboxIcon : Bool -> Element msg
+checkboxIcon checked =
+    Element.el
+        [ Element.width (Element.px 10)
+        , Element.height (Element.px 10)
+        , Element.centerY
+        , Border.rounded 5
+        , Border.color black
+        , Element.Background.color <|
+            if checked then
+                black
+
+            else
+                background
+        , Border.width 1
+        ]
+        Element.none
 
 
 ingredientNavigationItem : IngredientSet -> Ingredient -> Element.Element Msg
@@ -254,7 +303,7 @@ ingredientNavigationItem ingredientSet ingredient =
     in
     Input.checkbox []
         { onChange = \_ -> ToggleIngredient ingredient (not checked)
-        , icon = Input.defaultCheckbox
+        , icon = checkboxIcon
         , checked = checked
         , label = Input.labelRight [] (text ingredient.name)
         }
@@ -285,16 +334,6 @@ listIngredients model =
         )
 
 
-hasIngredients : IngredientSet -> Recipe -> Bool
-hasIngredients availableIngredients recipe =
-    Set.Any.isEmpty (Set.Any.diff recipe.ingredients availableIngredients)
-
-
-whatYouCanMake : IngredientSet -> List Recipe -> List Recipe
-whatYouCanMake availableIngredients allRecipes =
-    List.filter (hasIngredients availableIngredients) allRecipes
-
-
 leftColumn : Model -> Element.Element Msg
 leftColumn model =
     Element.column
@@ -311,7 +350,7 @@ leftColumn model =
 displayRecipe : Recipe -> Element.Element Msg
 displayRecipe recipe =
     Element.column [ spacing 20 ]
-        [ Element.el [ Element.Font.italic, Element.Font.underline ] (text recipe.name)
+        [ Element.el [ Font.italic, Font.underline ] (text recipe.name)
         , Element.row [ spacing 10 ]
             [ Element.column
                 [ alignTop, spacing 8, Element.width (Element.px 200) ]
@@ -327,7 +366,41 @@ displayRecipe recipe =
 listRecipes : Model -> Element.Element Msg
 listRecipes model =
     Element.column [ spacing 40 ]
-        (List.map displayRecipe model.recipes)
+        (List.map displayRecipe model.sufficient)
+
+
+displayOtherRecipe : IngredientSet -> Recipe -> Element.Element Msg
+displayOtherRecipe availableIngredients recipe =
+    Element.column [ spacing 10 ]
+        [ Element.paragraph []
+            ([ el [ Font.bold, Font.underline ] (text recipe.name)
+             , text " ("
+             ]
+                ++ List.intersperse
+                    (el [] (text ", "))
+                    (List.map
+                        (\ingredient ->
+                            el
+                                (if Set.Any.member ingredient availableIngredients then
+                                    []
+
+                                 else
+                                    [ strike ]
+                                )
+                                (text ingredient.name)
+                        )
+                        (Set.Any.toList recipe.ingredients)
+                    )
+                ++ [ text ")"
+                   ]
+            )
+        ]
+
+
+listOtherRecipes : Model -> Element.Element Msg
+listOtherRecipes model =
+    Element.column [ spacing 10 ]
+        (List.map (displayOtherRecipe model.availableIngredients) model.insufficient)
 
 
 rightColumn : Model -> Element.Element Msg
@@ -339,24 +412,26 @@ rightColumn model =
         , Element.width
             (Element.maximum 640 Element.fill)
         ]
-        [ title "RECIPES"
+        [ title "WHAT YOU CAN MAKE"
         , listRecipes model
+        , title "OTHER"
+        , listOtherRecipes model
         ]
 
 
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Element.Background.color (Element.rgb255 249 247 244)
+        [ Element.Background.color background
         , padding 20
-        , Element.Font.size 15
+        , Font.size 15
         , Element.width Element.fill
-        , Element.Font.family
-            [ Element.Font.external
+        , Font.family
+            [ Font.external
                 { name = "IBM Plex Mono"
                 , url = "https://fonts.googleapis.com/css?family=IBM+Plex+Mono"
                 }
-            , Element.Font.sansSerif
+            , Font.sansSerif
             ]
         ]
         (Element.row
