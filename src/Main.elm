@@ -1,10 +1,10 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Browser
-import Element exposing (Element, alignTop, el, padding, paddingEach, paddingXY, spacing, text)
+import Element exposing (Element, alignTop, el, padding, paddingEach, spacing, text)
 import Element.Background
 import Element.Border as Border
-import Element.Font as Font exposing (Font, bold, strike)
+import Element.Font as Font exposing (bold, strike)
 import Element.Input as Input
 import Html exposing (Html)
 import Quantity exposing (Quantity(..), printQuantity)
@@ -84,6 +84,11 @@ water =
     { name = "Water", t = Other }
 
 
+sodaWater : Material
+sodaWater =
+    { name = "Soda water", t = Other }
+
+
 ryeWhiskey : Material
 ryeWhiskey =
     { name = "Rye Whiskey", t = Spirit }
@@ -109,6 +114,11 @@ angosturaBitters =
     { name = "Angostura Bitters", t = Spirit }
 
 
+peychaudsBitters : Material
+peychaudsBitters =
+    { name = "Peychaud's Bitters", t = Spirit }
+
+
 citrusRind : Material
 citrusRind =
     { name = "Citrus rind", t = Spirit }
@@ -119,6 +129,26 @@ sweetRedVermouth =
     { name = "Sweet red vermouth", t = Spirit }
 
 
+dryVermouth : Material
+dryVermouth =
+    { name = "Dry vermouth", t = Spirit }
+
+
+cognac : Material
+cognac =
+    { name = "Cognac", t = Spirit }
+
+
+grenadine : Material
+grenadine =
+    { name = "Grenadine", t = Spirit }
+
+
+oj : Material
+oj =
+    { name = "Orange Juice", t = Spirit }
+
+
 whiteVermouth : Material
 whiteVermouth =
     { name = "White vermouth", t = Spirit }
@@ -127,6 +157,11 @@ whiteVermouth =
 sugar : Material
 sugar =
     { name = "Sugar", t = Sweetener }
+
+
+absinthe : Material
+absinthe =
+    { name = "Absinthe", t = Spirit }
 
 
 campari : Material
@@ -172,11 +207,18 @@ materials =
     , bitters
     , citrusRind
     , sweetRedVermouth
+    , dryVermouth
     , campari
     , sugar
+    , cognac
+    , grenadine
+    , oj
+    , sodaWater
+    , absinthe
     , lemonPeel
     , gumSyrup
     , whiteVermouth
+    , peychaudsBitters
     , egg
     , cider
     , nutmeg
@@ -224,6 +266,39 @@ Muddle until dissolve. Fill the glass with ice cubes and add whiskey. Garnish wi
             , { material = angosturaBitters, quantity = Dashes 1 }
             ]
       , description = """Stir in mixing glass with ice & strain."""
+      }
+    , { name = "Martini"
+      , ingredients =
+            [ { material = gin, quantity = Cl 6 }
+            , { material = dryVermouth, quantity = Cl 1 }
+            ]
+      , description = """\tStraight: Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Squeeze oil from lemon peel onto the drink, or garnish with olive."""
+      }
+    , { name = "Sazerac"
+      , ingredients =
+            [ { material = cognac, quantity = Cl 5 }
+            , { material = absinthe, quantity = Cl 1 }
+            , { material = sugar, quantity = Cube 1 }
+            , { material = peychaudsBitters, quantity = Dashes 2 }
+            ]
+      , description = """Straight: Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Squeeze oil from lemon peel onto the drink, or garnish with olive."""
+      }
+    , { name = "Americano"
+      , ingredients =
+            [ { material = campari, quantity = Cl 3 }
+            , { material = sweetRedVermouth, quantity = Cl 3 }
+            , { material = sodaWater, quantity = Splash }
+            ]
+      , description = """Pour the Campari and vermouth over ice into a highball glass, add a splash of soda water and garnish with half orange slice and a lemon twist."""
+      }
+    , { name = "Monkey Gland"
+      , ingredients =
+            [ { material = gin, quantity = Cl 5 }
+            , { material = oj, quantity = Cl 3 }
+            , { material = absinthe, quantity = Drops 2 }
+            , { material = grenadine, quantity = Drops 2 }
+            ]
+      , description = """Shake well over ice cubes in a shaker, strain into a chilled cocktail glass."""
       }
     ]
 
@@ -357,7 +432,9 @@ listIngredients : Model -> Element.Element Msg
 listIngredients model =
     Element.column [ spacing 8, alignTop ]
         (title "CABINET"
-            :: List.map (ingredientNavigationItem model) model.materials
+            :: (List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient)) model.materials
+                    |> List.map (ingredientNavigationItem model)
+               )
         )
 
 
