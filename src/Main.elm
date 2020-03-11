@@ -1,41 +1,41 @@
 module Main exposing (Msg(..), main, update, view)
 
-import Basics exposing (degrees)
 import Browser
-import Element exposing (Element, alignTop, el, padding, paddingEach, paddingXY, rotate, spacing, text)
+import Element exposing (Element, alignTop, el, padding, paddingEach, paddingXY, spacing, text)
 import Element.Background
 import Element.Border as Border
 import Element.Font as Font exposing (Font, bold, strike)
 import Element.Input as Input
 import Html exposing (Html)
+import Quantity exposing (Quantity(..), printQuantity)
 import Set.Any exposing (AnySet)
 
 
-type alias IngredientSet =
-    AnySet String Ingredient
+type alias MaterialSet =
+    AnySet String Material
 
 
 type alias Model =
     { recipes : List Recipe
     , sufficient : List Recipe
     , insufficient : List Recipe
-    , ingredients : List Ingredient
+    , materials : List Material
     , selectedRecipe : Maybe Recipe
-    , availableIngredients : IngredientSet
+    , availableMaterials : MaterialSet
     }
 
 
-ingredientKey : Ingredient -> String
-ingredientKey ingredient =
+materialKey : Material -> String
+materialKey ingredient =
     ingredient.name
 
 
 init : Model
 init =
     { recipes = recipes
-    , ingredients = ingredients
+    , materials = materials
     , selectedRecipe = Nothing
-    , availableIngredients = Set.Any.empty ingredientKey
+    , availableMaterials = Set.Any.fromList materialKey materials
     , sufficient = []
     , insufficient = []
     }
@@ -50,88 +50,122 @@ main =
         }
 
 
-type alias Ingredient =
+type IngredientType
+    = Spirit
+    | Garnish
+    | Sweetener
+    | Other
+
+
+type alias Material =
     { name : String
+    , t : IngredientType
     }
 
 
-whiskey : Ingredient
+type alias Ingredient =
+    { material : Material
+    , quantity : Quantity
+    }
+
+
+whiskey : Material
 whiskey =
-    { name = "Whiskey" }
+    { name = "Whiskey", t = Spirit }
 
 
-gin : Ingredient
+canadianWhiskey : Material
+canadianWhiskey =
+    { name = "Canadian Whiskey", t = Spirit }
+
+
+water : Material
+water =
+    { name = "Water", t = Other }
+
+
+ryeWhiskey : Material
+ryeWhiskey =
+    { name = "Rye Whiskey", t = Spirit }
+
+
+gin : Material
 gin =
-    { name = "Gin" }
+    { name = "Gin", t = Spirit }
 
 
-brandy : Ingredient
+brandy : Material
 brandy =
-    { name = "Brandy" }
+    { name = "Brandy", t = Spirit }
 
 
-bitters : Ingredient
+bitters : Material
 bitters =
-    { name = "Bitters" }
+    { name = "Bitters", t = Spirit }
 
 
-citrusRind : Ingredient
+angosturaBitters : Material
+angosturaBitters =
+    { name = "Angostura Bitters", t = Spirit }
+
+
+citrusRind : Material
 citrusRind =
-    { name = "Citrus rind" }
+    { name = "Citrus rind", t = Spirit }
 
 
-sweetRedVermouth : Ingredient
+sweetRedVermouth : Material
 sweetRedVermouth =
-    { name = "Sweet red vermouth" }
+    { name = "Sweet red vermouth", t = Spirit }
 
 
-whiteVermouth : Ingredient
+whiteVermouth : Material
 whiteVermouth =
-    { name = "White vermouth" }
+    { name = "White vermouth", t = Spirit }
 
 
-sugar : Ingredient
+sugar : Material
 sugar =
-    { name = "Sugar" }
+    { name = "Sugar", t = Sweetener }
 
 
-campari : Ingredient
+campari : Material
 campari =
-    { name = "Campari" }
+    { name = "Campari", t = Spirit }
 
 
-gumSyrup : Ingredient
+fernetBranca : Material
+fernetBranca =
+    { name = "Fernet Branca", t = Spirit }
+
+
+gumSyrup : Material
 gumSyrup =
-    { name = "Gum syrup" }
+    { name = "Gum syrup", t = Sweetener }
 
 
-lemonPeel : Ingredient
+lemonPeel : Material
 lemonPeel =
-    { name = "Lemon peel" }
+    { name = "Lemon peel", t = Garnish }
 
 
-ice : Ingredient
-ice =
-    { name = "Ice" }
-
-
-egg : Ingredient
+egg : Material
 egg =
-    { name = "Egg" }
+    { name = "Egg", t = Garnish }
 
 
-cider : Ingredient
+cider : Material
 cider =
-    { name = "Cider" }
+    { name = "Cider", t = Spirit }
 
 
-nutmeg : Ingredient
+nutmeg : Material
 nutmeg =
-    { name = "Nutmeg" }
+    { name = "Nutmeg", t = Other }
 
 
-ingredients : List Ingredient
-ingredients =
+materials : List Material
+materials =
     [ whiskey
     , gin
     , brandy
@@ -142,106 +176,91 @@ ingredients =
     , sugar
     , lemonPeel
     , gumSyrup
-    , ice
     , whiteVermouth
     , egg
     , cider
     , nutmeg
+    , fernetBranca
+    , water
+    , ryeWhiskey
+    , canadianWhiskey
+    , angosturaBitters
     ]
 
 
 type alias Recipe =
     { name : String
-    , ingredients : IngredientSet
+    , ingredients : List Ingredient
     , description : String
     }
-
-
-
---- https://archive.org/stream/modernamericandr00kapp/modernamericandr00kapp_djvu.txt
 
 
 recipes : List Recipe
 recipes =
     [ { name = "Old Fashioned"
       , ingredients =
-            Set.Any.fromList
-                ingredientKey
-                [ whiskey
-                , bitters
-                , citrusRind
-                , sugar
-                ]
-      , description = """Dissolve a small lump of sugar with a little water in a
-      whiskey-glass; add two dashes Angostura bitters, a small piece ice, a piece lemon-peel,
-      one jigger whiskey. Mix with small bar-spoon and serve, leaving spoon in the glass."""
-      }
-    , { name = "Brandy Cocktail"
-      , ingredients =
-            Set.Any.fromList
-                ingredientKey
-                [ ice
-                , gumSyrup
-                , bitters
-                , brandy
-                , bitters
-                , lemonPeel
-                ]
-      , description = """A mixing-glass half-full fine ice, two dashes 
-gum-syrup, two dashes Peyschaud or Angostura 
-bitters, one jigger brandy. Mix and strain into 
-cocktail-glass. Add a piece twisted lemon-peel or 
-a maraschino cherry."""
+            [ { material = whiskey, quantity = Ml 45 }
+            , { material = bitters, quantity = Dashes 2 }
+            , { material = citrusRind, quantity = None }
+            , { material = sugar, quantity = None }
+            , { material = water, quantity = FewDashes }
+            ]
+      , description = """Place sugar cube in old-fashioned glass and saturate with bitters, add a dash of plain water.
+Muddle until dissolve. Fill the glass with ice cubes and add whiskey. Garnish with orange slice and a cocktail cherry."""
       }
     , { name = "Manhattan"
       , ingredients =
-            Set.Any.fromList
-                ingredientKey
-                [ bitters
-                , whiskey
-                , gumSyrup
-                , sweetRedVermouth
-                , campari
-                , lemonPeel
-                , ice
-                ]
-      , description = """Fill mixing-glass half-full fine ice, add two 
-dashes gum-syrup, two dashes Peyschaud or Angostura bitters, one half-jigger Italian vermouth, 
-one-half jigger whiskey . Mix, strain into cocktail-glass.
-Add a piece of lemon-peel or a cherry."""
+            [ { material = ryeWhiskey, quantity = Cl 5 }
+            , { material = sweetRedVermouth, quantity = Cl 2 }
+            , { material = angosturaBitters, quantity = Dashes 1 }
+            ]
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass.Garnish with cocktail cherry."""
       }
-    , { name = "Cider Egg-Nogg"
+    , { name = "Toronto"
       , ingredients =
-            Set.Any.fromList
-                ingredientKey
-                [ sugar
-                , egg
-                , ice
-                , cider
-                , nutmeg
-                ]
-      , description = """One tablespoonful fine sugar, one egg in mixing-glass half-full fine ice ; fill with cider ; mix well, 
-strain into long punch-glass, a little grated nutmeg 
-on top. This drink is also known as General Harrison Egg-Nogg."""
+            [ { material = canadianWhiskey, quantity = Oz 2 }
+            , { material = fernetBranca, quantity = Oz 0.25 }
+            , { material = sugar, quantity = Tsp 0.25 }
+            , { material = angosturaBitters, quantity = Dashes 1 }
+            ]
+      , description = """Stir in mixing glass with ice & strain."""
       }
     ]
 
 
 type Msg
     = SelectRecipe Recipe
-    | ToggleIngredient Ingredient Bool
+    | ToggleIngredient Material Bool
 
 
-hasIngredients : IngredientSet -> Recipe -> Bool
-hasIngredients availableIngredients recipe =
-    Set.Any.isEmpty (Set.Any.diff recipe.ingredients availableIngredients)
+
+--- Utils
+--- Pure utilities.
+
+
+getMaterials : Recipe -> MaterialSet
+getMaterials recipe =
+    Set.Any.fromList
+        materialKey
+        (List.map (\ingredient -> ingredient.material) recipe.ingredients)
+
+
+hasIngredients : MaterialSet -> Recipe -> Bool
+hasIngredients availableMaterials recipe =
+    Set.Any.isEmpty (Set.Any.diff (getMaterials recipe) availableMaterials)
+
+
+recipesWithIngredient : List Recipe -> Material -> Int
+recipesWithIngredient allRecipes ingredient =
+    List.length
+        (List.filter (\recipe -> Set.Any.member ingredient (getMaterials recipe)) allRecipes)
 
 
 derive : Model -> Model
 derive model =
     let
         ( sufficient, insufficient ) =
-            List.partition (hasIngredients model.availableIngredients) model.recipes
+            List.partition (hasIngredients model.availableMaterials) model.recipes
     in
     { model
         | sufficient = sufficient
@@ -258,12 +277,12 @@ update msg model =
 
             ToggleIngredient ingredient checked ->
                 { model
-                    | availableIngredients =
+                    | availableMaterials =
                         if checked then
-                            Set.Any.insert ingredient model.availableIngredients
+                            Set.Any.insert ingredient model.availableMaterials
 
                         else
-                            Set.Any.remove ingredient model.availableIngredients
+                            Set.Any.remove ingredient model.availableMaterials
                 }
         )
 
@@ -295,17 +314,25 @@ checkboxIcon checked =
         Element.none
 
 
-ingredientNavigationItem : IngredientSet -> Ingredient -> Element.Element Msg
-ingredientNavigationItem ingredientSet ingredient =
+ingredientNavigationItem : Model -> Material -> Element.Element Msg
+ingredientNavigationItem model ingredient =
     let
         checked =
-            Set.Any.member ingredient ingredientSet
+            Set.Any.member ingredient model.availableMaterials
     in
     Input.checkbox []
         { onChange = \_ -> ToggleIngredient ingredient (not checked)
         , icon = checkboxIcon
         , checked = checked
-        , label = Input.labelRight [] (text ingredient.name)
+        , label =
+            Input.labelRight []
+                (text
+                    (ingredient.name
+                        ++ " ("
+                        ++ String.fromInt (recipesWithIngredient model.recipes ingredient)
+                        ++ ")"
+                    )
+                )
         }
 
 
@@ -330,7 +357,7 @@ listIngredients : Model -> Element.Element Msg
 listIngredients model =
     Element.column [ spacing 8, alignTop ]
         (title "CABINET"
-            :: List.map (ingredientNavigationItem model.availableIngredients) model.ingredients
+            :: List.map (ingredientNavigationItem model) model.materials
         )
 
 
@@ -355,8 +382,17 @@ displayRecipe recipe =
             [ Element.column
                 [ alignTop, spacing 8, Element.width (Element.px 200) ]
                 (List.map
-                    (\ingredient -> Element.el [] (text ("◦ " ++ ingredient.name)))
-                    (Set.Any.toList recipe.ingredients)
+                    (\ingredient ->
+                        Element.paragraph []
+                            [ text
+                                ("◦ "
+                                    ++ printQuantity ingredient.quantity
+                                    ++ " "
+                                    ++ ingredient.material.name
+                                )
+                            ]
+                    )
+                    recipe.ingredients
                 )
             , Element.paragraph [ alignTop, Element.width Element.fill ] [ text recipe.description ]
             ]
@@ -369,8 +405,8 @@ listRecipes model =
         (List.map displayRecipe model.sufficient)
 
 
-displayOtherRecipe : IngredientSet -> Recipe -> Element.Element Msg
-displayOtherRecipe availableIngredients recipe =
+displayOtherRecipe : MaterialSet -> Recipe -> Element.Element Msg
+displayOtherRecipe availableMaterials recipe =
     Element.column [ spacing 10 ]
         [ Element.paragraph []
             ([ el [ Font.bold, Font.underline ] (text recipe.name)
@@ -381,15 +417,15 @@ displayOtherRecipe availableIngredients recipe =
                     (List.map
                         (\ingredient ->
                             el
-                                (if Set.Any.member ingredient availableIngredients then
+                                (if Set.Any.member ingredient.material availableMaterials then
                                     []
 
                                  else
                                     [ strike ]
                                 )
-                                (text ingredient.name)
+                                (text ingredient.material.name)
                         )
-                        (Set.Any.toList recipe.ingredients)
+                        recipe.ingredients
                     )
                 ++ [ text ")"
                    ]
@@ -400,7 +436,7 @@ displayOtherRecipe availableIngredients recipe =
 listOtherRecipes : Model -> Element.Element Msg
 listOtherRecipes model =
     Element.column [ spacing 10 ]
-        (List.map (displayOtherRecipe model.availableIngredients) model.insufficient)
+        (List.map (displayOtherRecipe model.availableMaterials) model.insufficient)
 
 
 rightColumn : Model -> Element.Element Msg
