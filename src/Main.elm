@@ -1,6 +1,7 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Browser
+import Data exposing (Material, Recipe, recipes)
 import Element exposing (Element, alignTop, el, padding, paddingEach, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -30,6 +31,14 @@ materialKey ingredient =
     ingredient.name
 
 
+materials : List Material
+materials =
+    List.concatMap (\recipe -> List.map (\ingredient -> ingredient.material) recipe.ingredients) recipes
+        |> List.foldl (::) []
+        |> Set.Any.fromList materialKey
+        |> Set.Any.toList
+
+
 init : Model
 init =
     { recipes = recipes
@@ -50,259 +59,6 @@ main =
         }
 
 
-type IngredientType
-    = Spirit
-    | Garnish
-    | Sweetener
-    | Other
-
-
-type alias Material =
-    { name : String
-    , t : IngredientType
-    }
-
-
-type alias Ingredient =
-    { material : Material
-    , quantity : Quantity
-    }
-
-
-whiskey : Material
-whiskey =
-    { name = "Whiskey", t = Spirit }
-
-
-canadianWhiskey : Material
-canadianWhiskey =
-    { name = "Canadian Whiskey", t = Spirit }
-
-
-water : Material
-water =
-    { name = "Water", t = Other }
-
-
-sodaWater : Material
-sodaWater =
-    { name = "Soda water", t = Other }
-
-
-ryeWhiskey : Material
-ryeWhiskey =
-    { name = "Rye Whiskey", t = Spirit }
-
-
-gin : Material
-gin =
-    { name = "Gin", t = Spirit }
-
-
-brandy : Material
-brandy =
-    { name = "Brandy", t = Spirit }
-
-
-bitters : Material
-bitters =
-    { name = "Bitters", t = Spirit }
-
-
-angosturaBitters : Material
-angosturaBitters =
-    { name = "Angostura Bitters", t = Spirit }
-
-
-peychaudsBitters : Material
-peychaudsBitters =
-    { name = "Peychaud's Bitters", t = Spirit }
-
-
-citrusRind : Material
-citrusRind =
-    { name = "Citrus rind", t = Spirit }
-
-
-sweetRedVermouth : Material
-sweetRedVermouth =
-    { name = "Sweet red vermouth", t = Spirit }
-
-
-dryVermouth : Material
-dryVermouth =
-    { name = "Dry vermouth", t = Spirit }
-
-
-cognac : Material
-cognac =
-    { name = "Cognac", t = Spirit }
-
-
-grenadine : Material
-grenadine =
-    { name = "Grenadine", t = Spirit }
-
-
-oj : Material
-oj =
-    { name = "Orange Juice", t = Spirit }
-
-
-whiteVermouth : Material
-whiteVermouth =
-    { name = "White vermouth", t = Spirit }
-
-
-sugar : Material
-sugar =
-    { name = "Sugar", t = Sweetener }
-
-
-absinthe : Material
-absinthe =
-    { name = "Absinthe", t = Spirit }
-
-
-campari : Material
-campari =
-    { name = "Campari", t = Spirit }
-
-
-fernetBranca : Material
-fernetBranca =
-    { name = "Fernet Branca", t = Spirit }
-
-
-gumSyrup : Material
-gumSyrup =
-    { name = "Gum syrup", t = Sweetener }
-
-
-lemonPeel : Material
-lemonPeel =
-    { name = "Lemon peel", t = Garnish }
-
-
-egg : Material
-egg =
-    { name = "Egg", t = Garnish }
-
-
-cider : Material
-cider =
-    { name = "Cider", t = Spirit }
-
-
-nutmeg : Material
-nutmeg =
-    { name = "Nutmeg", t = Other }
-
-
-materials : List Material
-materials =
-    [ whiskey
-    , gin
-    , brandy
-    , bitters
-    , citrusRind
-    , sweetRedVermouth
-    , dryVermouth
-    , campari
-    , sugar
-    , cognac
-    , grenadine
-    , oj
-    , sodaWater
-    , absinthe
-    , lemonPeel
-    , gumSyrup
-    , whiteVermouth
-    , peychaudsBitters
-    , egg
-    , cider
-    , nutmeg
-    , fernetBranca
-    , water
-    , ryeWhiskey
-    , canadianWhiskey
-    , angosturaBitters
-    ]
-
-
-type alias Recipe =
-    { name : String
-    , ingredients : List Ingredient
-    , description : String
-    }
-
-
-recipes : List Recipe
-recipes =
-    [ { name = "Old Fashioned"
-      , ingredients =
-            [ { material = whiskey, quantity = Ml 45 }
-            , { material = bitters, quantity = Dashes 2 }
-            , { material = citrusRind, quantity = None }
-            , { material = sugar, quantity = None }
-            , { material = water, quantity = FewDashes }
-            ]
-      , description = """Place sugar cube in old-fashioned glass and saturate with bitters, add a dash of plain water.
-Muddle until dissolve. Fill the glass with ice cubes and add whiskey. Garnish with orange slice and a cocktail cherry."""
-      }
-    , { name = "Manhattan"
-      , ingredients =
-            [ { material = ryeWhiskey, quantity = Cl 5 }
-            , { material = sweetRedVermouth, quantity = Cl 2 }
-            , { material = angosturaBitters, quantity = Dashes 1 }
-            ]
-      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass.Garnish with cocktail cherry."""
-      }
-    , { name = "Toronto"
-      , ingredients =
-            [ { material = canadianWhiskey, quantity = Oz 2 }
-            , { material = fernetBranca, quantity = Oz 0.25 }
-            , { material = sugar, quantity = Tsp 0.25 }
-            , { material = angosturaBitters, quantity = Dashes 1 }
-            ]
-      , description = """Stir in mixing glass with ice & strain."""
-      }
-    , { name = "Martini"
-      , ingredients =
-            [ { material = gin, quantity = Cl 6 }
-            , { material = dryVermouth, quantity = Cl 1 }
-            ]
-      , description = """\tStraight: Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Squeeze oil from lemon peel onto the drink, or garnish with olive."""
-      }
-    , { name = "Sazerac"
-      , ingredients =
-            [ { material = cognac, quantity = Cl 5 }
-            , { material = absinthe, quantity = Cl 1 }
-            , { material = sugar, quantity = Cube 1 }
-            , { material = peychaudsBitters, quantity = Dashes 2 }
-            ]
-      , description = """Straight: Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Squeeze oil from lemon peel onto the drink, or garnish with olive."""
-      }
-    , { name = "Americano"
-      , ingredients =
-            [ { material = campari, quantity = Cl 3 }
-            , { material = sweetRedVermouth, quantity = Cl 3 }
-            , { material = sodaWater, quantity = Splash }
-            ]
-      , description = """Pour the Campari and vermouth over ice into a highball glass, add a splash of soda water and garnish with half orange slice and a lemon twist."""
-      }
-    , { name = "Monkey Gland"
-      , ingredients =
-            [ { material = gin, quantity = Cl 5 }
-            , { material = oj, quantity = Cl 3 }
-            , { material = absinthe, quantity = Drops 2 }
-            , { material = grenadine, quantity = Drops 2 }
-            ]
-      , description = """Shake well over ice cubes in a shaker, strain into a chilled cocktail glass."""
-      }
-    ]
-
-
 type Msg
     = SelectRecipe Recipe
     | ToggleIngredient Material Bool
@@ -315,20 +71,20 @@ type Msg
 
 getMaterials : Recipe -> MaterialSet
 getMaterials recipe =
-    Set.Any.fromList
-        materialKey
-        (List.map (\ingredient -> ingredient.material) recipe.ingredients)
+    List.map (\ingredient -> ingredient.material) recipe.ingredients
+        |> Set.Any.fromList
+            materialKey
 
 
 hasIngredients : MaterialSet -> Recipe -> Bool
 hasIngredients availableMaterials recipe =
-    Set.Any.isEmpty (Set.Any.diff (getMaterials recipe) availableMaterials)
+    Set.Any.diff (getMaterials recipe) availableMaterials |> Set.Any.isEmpty
 
 
 recipesWithIngredient : List Recipe -> Material -> Int
 recipesWithIngredient allRecipes ingredient =
-    List.length
-        (List.filter (\recipe -> Set.Any.member ingredient (getMaterials recipe)) allRecipes)
+    List.filter (\recipe -> Set.Any.member ingredient (getMaterials recipe)) allRecipes
+        |> List.length
 
 
 derive : Model -> Model
