@@ -1,7 +1,7 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Browser
-import Data exposing (Material, Recipe, recipes)
+import Data exposing (IngredientType(..), Material, Recipe, recipes)
 import Element exposing (Element, alignTop, el, padding, paddingEach, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -18,8 +18,6 @@ type alias MaterialSet =
 
 type alias Model =
     { recipes : List Recipe
-    , sufficient : List Recipe
-    , insufficient : List Recipe
     , materials : List Material
     , selectedRecipe : Maybe Recipe
     , availableMaterials : MaterialSet
@@ -44,11 +42,8 @@ init =
     { recipes = recipes
     , materials = materials
     , selectedRecipe = Nothing
-    , availableMaterials = Set.Any.fromList materialKey materials
-    , sufficient = []
-    , insufficient = []
+    , availableMaterials = Set.Any.empty materialKey -- Set.Any.fromList materialKey materials
     }
-        |> derive
 
 
 main =
@@ -76,9 +71,9 @@ getMaterials recipe =
             materialKey
 
 
-hasIngredients : MaterialSet -> Recipe -> Bool
-hasIngredients availableMaterials recipe =
-    Set.Any.diff (getMaterials recipe) availableMaterials |> Set.Any.isEmpty
+missingIngredients : MaterialSet -> Recipe -> MaterialSet
+missingIngredients availableMaterials recipe =
+    Set.Any.diff (getMaterials recipe) availableMaterials
 
 
 recipesWithIngredient : List Recipe -> Material -> Int
@@ -87,35 +82,21 @@ recipesWithIngredient allRecipes ingredient =
         |> List.length
 
 
-derive : Model -> Model
-derive model =
-    let
-        ( sufficient, insufficient ) =
-            List.partition (hasIngredients model.availableMaterials) model.recipes
-    in
-    { model
-        | sufficient = sufficient
-        , insufficient = insufficient
-    }
-
-
 update : Msg -> Model -> Model
 update msg model =
-    derive
-        (case msg of
-            SelectRecipe recipe ->
-                { model | selectedRecipe = Just recipe }
+    case msg of
+        SelectRecipe recipe ->
+            { model | selectedRecipe = Just recipe }
 
-            ToggleIngredient ingredient checked ->
-                { model
-                    | availableMaterials =
-                        if checked then
-                            Set.Any.insert ingredient model.availableMaterials
+        ToggleIngredient ingredient checked ->
+            { model
+                | availableMaterials =
+                    if checked then
+                        Set.Any.insert ingredient model.availableMaterials
 
-                        else
-                            Set.Any.remove ingredient model.availableMaterials
-                }
-        )
+                    else
+                        Set.Any.remove ingredient model.availableMaterials
+            }
 
 
 background =
@@ -179,17 +160,28 @@ title : String -> Element.Element Msg
 title name =
     Element.el
         [ bold
-        , paddingEach { edges | bottom = 10 }
+        , paddingEach { edges | bottom = 5, top = 10 }
         ]
         (text name)
+
+
+typeMenu : Model -> IngredientType -> List (Element.Element Msg)
+typeMenu model t =
+    List.filter (\material -> material.t == t) model.materials
+        |> List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient))
+        |> List.map (ingredientNavigationItem model)
 
 
 listIngredients : Model -> Element.Element Msg
 listIngredients model =
     Element.column [ spacing 8, alignTop ]
-        (title "CABINET"
-            :: (List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient)) model.materials
-                    |> List.map (ingredientNavigationItem model)
+        (title "SPIRITS"
+            :: typeMenu model Spirit
+            ++ (title "SWEETENERS"
+                    :: typeMenu model Sweetener
+               )
+            ++ (title "OTHER"
+                    :: typeMenu model Other
                )
         )
 
@@ -204,6 +196,47 @@ leftColumn model =
             Element.shrink
         ]
         [ listIngredients model
+        ]
+
+
+recipeBlock : Model -> Recipe -> Element.Element Msg
+recipeBlock model recipe =
+    let
+        viable =
+            missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty
+    in
+    Element.column
+        [ spacing 10
+        , padding 10
+        , Border.color black
+        , Border.width 1
+        , if viable then
+            Border.solid
+
+          else
+            Border.dashed
+        , Element.width Element.fill
+        , Element.height Element.fill
+        , alignTop
+        ]
+        [ Element.el [ Font.italic, Font.underline ] (text recipe.name)
+        , Element.paragraph []
+            (List.intersperse
+                (el [] (text ", "))
+                (List.map
+                    (\ingredient ->
+                        el
+                            (if Set.Any.member ingredient.material model.availableMaterials then
+                                []
+
+                             else
+                                [ strike ]
+                            )
+                            (text ingredient.material.name)
+                    )
+                    recipe.ingredients
+                )
+            )
         ]
 
 
@@ -232,44 +265,77 @@ displayRecipe recipe =
         ]
 
 
+chunksOfLeft : Int -> List a -> List (List a)
+chunksOfLeft k xs =
+    if k == 0 then
+        [ [] ]
+
+    else if k < 0 then
+        []
+
+    else if List.length xs > k then
+        List.take k xs :: chunksOfLeft k (List.drop k xs)
+
+    else
+        [ xs ]
+
+
 listRecipes : Model -> Element.Element Msg
 listRecipes model =
-    Element.column [ spacing 40 ]
-        (List.map displayRecipe model.sufficient)
+    let
+        ( sufficient, unsortedInsufficient ) =
+            List.partition
+                (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty)
+                model.recipes
 
+        insufficient =
+            List.sortBy (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.size) unsortedInsufficient
 
-displayOtherRecipe : MaterialSet -> Recipe -> Element.Element Msg
-displayOtherRecipe availableMaterials recipe =
-    Element.column [ spacing 10 ]
-        [ Element.paragraph []
-            ([ el [ Font.bold, Font.underline ] (text recipe.name)
-             , text " ("
-             ]
-                ++ List.intersperse
-                    (el [] (text ", "))
-                    (List.map
-                        (\ingredient ->
-                            el
-                                (if Set.Any.member ingredient.material availableMaterials then
-                                    []
-
-                                 else
-                                    [ strike ]
-                                )
-                                (text ingredient.material.name)
-                        )
-                        recipe.ingredients
-                    )
-                ++ [ text ")"
-                   ]
+        orderedChunkedRecipes =
+            sufficient ++ insufficient |> chunksOfLeft 3
+    in
+    Element.column [ spacing 20, Element.width Element.fill ]
+        (List.map
+            (\recipes ->
+                Element.row [ spacing 20 ] (List.map (recipeBlock model) recipes)
             )
-        ]
+            orderedChunkedRecipes
+        )
 
 
-listOtherRecipes : Model -> Element.Element Msg
-listOtherRecipes model =
-    Element.column [ spacing 10 ]
-        (List.map (displayOtherRecipe model.availableMaterials) model.insufficient)
+
+--
+--
+-- displayOtherRecipe : MaterialSet -> Recipe -> Element.Element Msg
+-- displayOtherRecipe availableMaterials recipe =
+--     Element.column [ spacing 10 ]
+--         [ Element.paragraph []
+--             ([ el [ Font.bold, Font.underline ] (text recipe.name)
+--              , text " ("
+--              ]
+--                 ++ List.intersperse
+--                     (el [] (text ", "))
+--                     (List.map
+--                         (\ingredient ->
+--                             el
+--                                 (if Set.Any.member ingredient.material availableMaterials then
+--                                     []
+--
+--                                  else
+--                                     [ strike ]
+--                                 )
+--                                 (text ingredient.material.name)
+--                         )
+--                         recipe.ingredients
+--                     )
+--                 ++ [ text ")"
+--                    ]
+--             )
+--         ]
+-- listOtherRecipes : Model -> Element.Element Msg
+-- listOtherRecipes model =
+--     Element.column [ spacing 10 ]
+--         (List.map (displayOtherRecipe model.availableMaterials) model.insufficient)
 
 
 rightColumn : Model -> Element.Element Msg
@@ -281,10 +347,8 @@ rightColumn model =
         , Element.width
             (Element.maximum 640 Element.fill)
         ]
-        [ title "WHAT YOU CAN MAKE"
+        [ title "RECIPES"
         , listRecipes model
-        , title "OTHER"
-        , listOtherRecipes model
         ]
 
 
