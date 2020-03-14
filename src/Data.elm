@@ -99,7 +99,17 @@ grenadine =
 
 oj : Material
 oj =
-    { name = "Orange Juice", t = Spirit }
+    { name = "Orange Juice", t = Other }
+
+
+lime : Material
+lime =
+    { name = "Lime", t = Other }
+
+
+cachaca : Material
+cachaca =
+    { name = "Cachaça", t = Spirit }
 
 
 whiteVermouth : Material
@@ -157,6 +167,11 @@ whiteRum =
     { name = "White rum", t = Spirit }
 
 
+darkRum : Material
+darkRum =
+    { name = "Dark rum", t = Spirit }
+
+
 limeJuice : Material
 limeJuice =
     { name = "Lime juice", t = Other }
@@ -190,6 +205,11 @@ gingerBeer =
 prosecco : Material
 prosecco =
     { name = "Prosecco", t = Spirit }
+
+
+mint : Material
+mint =
+    { name = "Mint", t = Other }
 
 
 peachPuree : Material
@@ -317,5 +337,31 @@ Muddle until dissolve. Fill the glass with ice cubes and add whiskey. Garnish wi
             , { material = coffeeLiqueur, quantity = Cl 2 }
             ]
       , description = """Pour the ingredients into an old fashioned glass filled with ice cubes. Stir gently."""
+      }
+    , { name = "Caipirinha"
+      , ingredients =
+            [ { material = cachaca, quantity = Cl 5 }
+            , { material = lime, quantity = Custom "Half, in four wedges" }
+            , { material = sugar, quantity = Tsp 2 }
+            ]
+      , description = """Place lime and sugar into old fashioned glass and muddle (mash the two ingredients together using a muddler or a wooden spoon). Fill the glass with ice and add the Cachaça."""
+      }
+    , { name = "Mojito"
+      , ingredients =
+            [ { material = whiteRum, quantity = Cl 4 }
+            , { material = limeJuice, quantity = Cl 3 }
+            , { material = mint, quantity = Sprigs 6 }
+            , { material = sugar, quantity = Tsp 2 }
+            , { material = sodaWater, quantity = None }
+            ]
+      , description = """Muddle mint springs with sugar and lime juice. Add splash of soda water and fill glass with cracked ice. Pour rum and top with soda water. Garnish with spring of mint leaves and lemon slice. Serve with straw."""
+      }
+    , { name = "Dark 'n' Stormy"
+      , ingredients =
+            [ { material = darkRum, quantity = Cl 6 }
+            , { material = gingerBeer, quantity = Cl 10 }
+            , { material = lime, quantity = None }
+            ]
+      , description = """Fill glass with ice, add rum and top with ginger beer. Garnish with lime wedge."""
       }
     ]

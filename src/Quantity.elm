@@ -10,7 +10,9 @@ type Quantity
     | Cl Float
     | Tsp Float
     | Cube Int
+    | Sprigs Int
     | Drops Int
+    | Custom String
     | None
 
 
@@ -24,11 +26,21 @@ printQuantity quantity =
             else
                 String.fromInt a ++ " dashes"
 
+        Sprigs a ->
+            if a == 1 then
+                "1 sprig"
+
+            else
+                String.fromInt a ++ " sprigs"
+
         FewDashes ->
             "Few dashes"
 
         Splash ->
             "Splash"
+
+        Custom str ->
+            str
 
         Cube a ->
             if a == 1 then
