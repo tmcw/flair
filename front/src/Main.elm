@@ -219,6 +219,11 @@ black =
     Element.rgb 0 0 0
 
 
+blue : Element.Color
+blue =
+    Element.rgb255 129 127 224
+
+
 checkboxIcon : Bool -> Element msg
 checkboxIcon checked =
     Element.el
@@ -560,6 +565,11 @@ header model =
                 Input.labelRight []
                     (text "Equate whiskey")
             }
+        , Element.el []
+            (Element.link
+                [ Font.color blue ]
+                { url = "https://github.com/tmcw/flair", label = text "{source code}" }
+            )
         , Element.el
             [ paddingEach
                 { left = 40
