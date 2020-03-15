@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "elm-app build"
+    "build": "cd front && elm-app build && mv build ../public"
   },
   "dependencies": {
     "create-elm-app": "^4.2.1"
