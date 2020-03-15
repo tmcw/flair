@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "functions": {
+    "back/index.js": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  }
+}
