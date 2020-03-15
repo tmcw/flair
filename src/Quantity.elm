@@ -1,13 +1,11 @@
-module Quantity exposing (Quantity(..), printQuantity)
+module Quantity exposing (Quantity(..), Units(..), printQuantity)
 
 
 type Quantity
     = Dashes Int
     | FewDashes
     | Splash
-    | Ml Float
-    | Oz Float
-    | Cl Float
+    | CL Float
     | Tsp Float
     | Cube Int
     | Sprigs Int
@@ -16,8 +14,14 @@ type Quantity
     | None
 
 
-printQuantity : Quantity -> String
-printQuantity quantity =
+type Units
+    = Ml
+    | Oz
+    | Cl
+
+
+printQuantity : Units -> Quantity -> String
+printQuantity units quantity =
     case quantity of
         Dashes a ->
             if a == 1 then
@@ -52,14 +56,16 @@ printQuantity quantity =
         Drops a ->
             String.fromInt a ++ " drops"
 
-        Ml a ->
-            String.fromFloat a ++ " Ml"
+        CL a ->
+            case units of
+                Cl ->
+                    String.fromFloat a ++ " Cl"
 
-        Oz a ->
-            String.fromFloat a ++ " Oz"
+                Ml ->
+                    String.fromFloat (a * 10) ++ " Ml"
 
-        Cl a ->
-            String.fromFloat a ++ " Cl"
+                Oz ->
+                    String.fromFloat (toFloat (floor (a * 0.3519503 * 100)) / 100) ++ " Cl"
 
         Tsp a ->
             String.fromFloat a ++ " Tsp"
