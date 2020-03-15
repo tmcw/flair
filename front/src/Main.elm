@@ -441,7 +441,7 @@ recipeBlock model recipe =
             [ drinkIcon recipe
             , Element.el [ Font.italic, Font.underline ] (text recipe.name)
             ]
-        , Element.paragraph []
+        , Element.paragraph [ paddingEach { edges | left = 5 } ]
             (List.intersperse
                 (el [] (text ", "))
                 (List.map
@@ -478,7 +478,7 @@ displayRecipe model recipe =
         ([ title recipe.name
          , Element.row [ spacing 4, spacing 10 ]
             [ Element.el [ alignTop ] (drinkIcon recipe)
-            , Element.paragraph [] [ text ("Traditionally served in a " ++ glassName recipe.glass) ]
+            , Element.paragraph [] [ text ("Served in a " ++ glassName recipe.glass) ]
             ]
          , Element.column
             [ alignTop, spacing 8 ]
