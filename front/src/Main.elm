@@ -54,7 +54,7 @@ init =
     , selectedRecipe = List.head recipes
     , availableMaterials = Set.Any.empty materialKey -- Set.Any.fromList materialKey materials
     , units = Ml
-    , mode = Grid
+    , mode = Normal
     }
 
 

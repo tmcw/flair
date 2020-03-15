@@ -1,0 +1,12 @@
+{
+  "name": "front",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "elm-app build"
+  },
+  "dependencies": {
+    "create-elm-app": "^4.2.1"
+  }
+}
