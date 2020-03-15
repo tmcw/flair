@@ -1,9 +1,9 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Browser
-import Browser.Events
-import Data exposing (Ingredient, IngredientType(..), Material, Recipe, recipes)
-import Element exposing (Element, alignTop, centerX, el, html, padding, paddingEach, spacing, text)
+import Browser.Dom as Dom
+import Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
+import Element exposing (Element, alignTop, centerX, el, html, padding, paddingEach, paddingXY, spacing, text)
 import Element.Background
 import Element.Border as Border
 import Element.Events exposing (onClick)
@@ -12,7 +12,7 @@ import Element.Input as Input
 import Html exposing (Html, option, select)
 import Html.Attributes exposing (value)
 import Html.Events
-import Json.Decode as Decode
+import Icons exposing (champagneFluteIcon, cocktailIcon, collinsIcon, copperMugIcon, oldFashionedIcon)
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
 import Set.Any exposing (AnySet)
 import Svg exposing (svg)
@@ -52,33 +52,12 @@ materialKey ingredient =
 
 deriveMaterials : Model -> Model
 deriveMaterials model =
-    let
-        ( sufficient, unsortedInsufficient ) =
-            List.partition
-                (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty)
-                model.recipes
-
-        insufficient =
-            List.sortBy (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.size) unsortedInsufficient
-
-        alphabetical =
-            List.sortBy (\recipe -> recipe.name) model.recipes
-
-        orderedRecipes =
-            case model.sort of
-                Feasibility ->
-                    sufficient ++ insufficient
-
-                Alphabetical ->
-                    alphabetical
-    in
     { model
         | materials =
             List.concatMap (\recipe -> List.map (\ingredient -> ingredient.material) recipe.ingredients) model.recipes
                 |> List.foldl (::) []
                 |> Set.Any.fromList materialKey
                 |> Set.Any.toList
-        , recipes = orderedRecipes
     }
 
 
@@ -86,7 +65,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { recipes = recipes
       , materials = []
-      , selectedRecipe = Nothing
+      , selectedRecipe = List.head recipes
       , availableMaterials = Set.Any.empty materialKey -- Set.Any.fromList materialKey materials
       , units = Ml
       , mode = Normal
@@ -112,10 +91,10 @@ fuzzyWhiskey substituteWhiskey model =
                                     recipe.ingredients
                         }
                     )
-                    recipes
+                    model.recipes
 
             else
-                recipes
+                model.recipes
     }
 
 
@@ -133,36 +112,13 @@ fuzzyWhiskeyIngredient ingredient =
     }
 
 
-keyDecoder : Decode.Decoder Msg
-keyDecoder =
-    Decode.map toDirection (Decode.field "key" Decode.string)
-
-
-toDirection : String -> Msg
-toDirection string =
-    case string of
-        "k" ->
-            MoveUp
-
-        "j" ->
-            MoveDown
-
-        _ ->
-            Ignored
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Browser.Events.onKeyDown keyDecoder
-
-
 main : Program () Model Msg
 main =
     Browser.element
-        { init = always init
+        { init = \_ -> init
         , update = update
         , view = view
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
 
 
@@ -173,9 +129,6 @@ type Msg
     | SetMode Mode
     | SetSubsituteWhiskey Bool
     | SetSort Sort
-    | MoveUp
-    | MoveDown
-    | Ignored
 
 
 
@@ -199,8 +152,8 @@ getNeighbors : Model -> Recipe -> List Recipe
 getNeighbors model recipe =
     List.filter
         (\r ->
-            (r.name
-                /= recipe.name
+            (r
+                /= recipe
             )
                 && (Set.Any.diff (getMaterials r) (getMaterials recipe)
                         |> Set.Any.size
@@ -220,61 +173,17 @@ recipesWithIngredient allRecipes ingredient =
         |> List.length
 
 
-getNext : List Recipe -> Recipe -> Maybe Recipe
-getNext recipes target =
-    Maybe.andThen
-        (\x ->
-            if x == target then
-                List.drop 1 recipes |> List.head
-
-            else
-                getNext (List.drop 1 recipes) target
-        )
-        (List.head
-            recipes
-        )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     ( case msg of
         SelectRecipe recipe ->
-            { model
-                | selectedRecipe =
-                    if Just recipe == model.selectedRecipe then
-                        Nothing
-
-                    else
-                        Just recipe
-            }
+            { model | selectedRecipe = Just recipe }
 
         SetUnits units ->
             { model | units = units }
 
         SetSort sort ->
             { model | sort = sort }
-
-        MoveUp ->
-            { model
-                | selectedRecipe =
-                    case model.selectedRecipe of
-                        Just r ->
-                            getNext (List.reverse model.recipes) r
-
-                        Nothing ->
-                            List.head model.recipes
-            }
-
-        MoveDown ->
-            { model
-                | selectedRecipe =
-                    case model.selectedRecipe of
-                        Just r ->
-                            getNext model.recipes r
-
-                        Nothing ->
-                            List.head model.recipes
-            }
 
         ToggleIngredient ingredient checked ->
             { model
@@ -290,10 +199,7 @@ update msg model =
             { model | mode = mode }
 
         SetSubsituteWhiskey on ->
-            { model | substituteWhiskey = on } |> fuzzyWhiskey on |> deriveMaterials
-
-        Ignored ->
-            model
+            { model | recipes = recipes, substituteWhiskey = on } |> fuzzyWhiskey on |> deriveMaterials
     , Cmd.none
     )
 
@@ -364,7 +270,6 @@ ingredientNavigationItem model ingredient =
         }
 
 
-edges : { top : Int, right : Int, bottom : Int, left : Int }
 edges =
     { top = 0
     , right = 0
@@ -451,6 +356,50 @@ neighborBlock recipe neighbor =
         ]
 
 
+glassName : Glass -> String
+glassName glass =
+    case glass of
+        OldFashioned ->
+            "Old Fashioned glass"
+
+        Cocktail ->
+            "Cocktail glass"
+
+        Collins ->
+            "Collins glass"
+
+        CopperMug ->
+            "Copper mug"
+
+        ChampagneFlute ->
+            "Champagne flute"
+
+        Data.Highball ->
+            "Highball glass"
+
+
+drinkIcon : Recipe -> Element.Element Msg
+drinkIcon recipe =
+    case recipe.glass of
+        OldFashioned ->
+            oldFashionedIcon
+
+        Cocktail ->
+            cocktailIcon
+
+        Collins ->
+            collinsIcon
+
+        CopperMug ->
+            copperMugIcon
+
+        ChampagneFlute ->
+            champagneFluteIcon
+
+        _ ->
+            copperMugIcon
+
+
 recipeBlock : Model -> Recipe -> Element.Element Msg
 recipeBlock model recipe =
     let
@@ -483,22 +432,26 @@ recipeBlock model recipe =
         , alignTop
         , onClick (SelectRecipe recipe)
         ]
-        [ Element.el [ Font.italic, Font.underline ] (text recipe.name)
+        [ Element.row []
+            [ drinkIcon recipe
+            , Element.el [ Font.italic, Font.underline ] (text recipe.name)
+            ]
         , Element.paragraph []
-            (List.map
-                (\ingredient ->
-                    el
-                        (if Set.Any.member ingredient.material model.availableMaterials then
-                            []
+            (List.intersperse
+                (el [] (text ", "))
+                (List.map
+                    (\ingredient ->
+                        el
+                            (if Set.Any.member ingredient.material model.availableMaterials then
+                                []
 
-                         else
-                            [ strike ]
-                        )
-                        (text ingredient.material.name)
+                             else
+                                [ strike ]
+                            )
+                            (text ingredient.material.name)
+                    )
+                    recipe.ingredients
                 )
-                recipe.ingredients
-                |> List.intersperse
-                    (el [] (text ", "))
             )
         ]
 
@@ -506,17 +459,7 @@ recipeBlock model recipe =
 noneSelected : Element.Element Msg
 noneSelected =
     Element.column [ spacing 20, alignTop ]
-        [ Element.el [ Font.bold ] (text "Hi.")
-        , Element.paragraph [ spacing 10 ] [ el [] (text """
-        This is a website that I made about cocktails. I'm not a huge cocktail nerd (drinking is bad, probably), but think that they're cool.
-        And the world's pretty bad right now and making this has been calming.""") ]
-        , Element.paragraph [ spacing 10 ] [ el [] (text """It gave me a chance to both tinker with technology I usually don't use (Elm),
-        and explore some of the cool properties of cocktails: notably that they're pretty similar and have standardized ingredients,
-        so they can be described in relationship to each other.""") ]
-        , Element.paragraph [ spacing 10 ] [ el [] (text """So some of it might seem funky. By default, the list is sorted by 'feasibility': as you add
-    ingredients that you have, it'll put recipes that you can make (or barely make) closer to the top. Also, click on 'Grid' for a wacky adjacency grid
-    of cocktails and their ingredients.""") ]
-        , Element.paragraph [ spacing 10 ] [ el [] (text """Also, for vim fans, there’s j & k support.""") ]
+        [ Element.el [ Font.italic, Font.underline ] (text "Nothing selected")
         ]
 
 
@@ -528,6 +471,10 @@ displayRecipe model recipe =
     in
     Element.column [ spacing 20, alignTop ]
         ([ title recipe.name
+         , Element.row [ spacing 4, spacing 10 ]
+            [ Element.el [ alignTop ] (drinkIcon recipe)
+            , Element.paragraph [] [ text ("Traditionally served in a " ++ glassName recipe.glass) ]
+            ]
          , Element.column
             [ alignTop, spacing 8 ]
             (List.map
@@ -613,6 +560,27 @@ header model =
                 Input.labelRight []
                     (text "Equate whiskey")
             }
+        , Element.el
+            [ paddingEach
+                { left = 40
+                , top = 0
+                , bottom = 0
+                , right = 5
+                }
+            ]
+            (text "Sort")
+        , Element.el []
+            (select
+                []
+                [ option [ value "Feasibility", Html.Events.onClick (SetSort Feasibility) ]
+                    [ Html.text "Feasibility"
+                    ]
+                , option [ value "Alphabetical", Html.Events.onClick (SetSort Alphabetical) ]
+                    [ Html.text "Alphabetical"
+                    ]
+                ]
+                |> html
+            )
         , Element.el
             [ paddingEach
                 { left = 40
@@ -783,25 +751,8 @@ view model =
                             [ Element.width Element.fill
                             , spacing 10
                             ]
-                            [ Element.el
-                                [ paddingEach { edges | left = 10 }
-                                , Element.width Element.fill
-                                ]
-                                (title
-                                    "COCKTAILS"
-                                )
-                            , Element.el []
-                                (select
-                                    []
-                                    [ option [ value "Feasibility", Html.Events.onClick (SetSort Feasibility) ]
-                                        [ Html.text "Feasibility"
-                                        ]
-                                    , option [ value "Alphabetical", Html.Events.onClick (SetSort Alphabetical) ]
-                                        [ Html.text "Alphabetical"
-                                        ]
-                                    ]
-                                    |> html
-                                )
+                            [ title
+                                "COCKTAILS"
                             ]
                         , listRecipes model
                         ]
