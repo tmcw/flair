@@ -2,7 +2,7 @@ module Main exposing (Msg(..), main, update, view)
 
 import Browser
 import Browser.Events
-import Data exposing (Ingredient, IngredientType(..), Material, Recipe, recipes)
+import Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
 import Element exposing (Element, alignTop, centerX, el, html, padding, paddingEach, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -12,6 +12,7 @@ import Element.Input as Input
 import Html exposing (Html, option, select)
 import Html.Attributes exposing (value)
 import Html.Events
+import Icons exposing (champagneFluteIcon, cocktailIcon, collinsIcon, copperMugIcon, oldFashionedIcon)
 import Json.Decode as Decode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
 import Set.Any exposing (AnySet)
@@ -313,6 +314,11 @@ black =
     Element.rgb 0 0 0
 
 
+blue : Element.Color
+blue =
+    Element.rgb255 129 127 224
+
+
 checkboxIcon : Bool -> Element msg
 checkboxIcon checked =
     Element.el
@@ -412,6 +418,50 @@ listIngredients model =
         )
 
 
+glassName : Glass -> String
+glassName glass =
+    case glass of
+        OldFashioned ->
+            "Old Fashioned glass"
+
+        Cocktail ->
+            "Cocktail glass"
+
+        Collins ->
+            "Collins glass"
+
+        CopperMug ->
+            "Copper mug"
+
+        ChampagneFlute ->
+            "Champagne flute"
+
+        Data.Highball ->
+            "Highball glass"
+
+
+drinkIcon : Recipe -> Element.Element Msg
+drinkIcon recipe =
+    case recipe.glass of
+        OldFashioned ->
+            oldFashionedIcon
+
+        Cocktail ->
+            cocktailIcon
+
+        Collins ->
+            collinsIcon
+
+        CopperMug ->
+            copperMugIcon
+
+        ChampagneFlute ->
+            champagneFluteIcon
+
+        _ ->
+            copperMugIcon
+
+
 neighborBlock : Recipe -> Recipe -> Element.Element Msg
 neighborBlock recipe neighbor =
     let
@@ -483,22 +533,26 @@ recipeBlock model recipe =
         , alignTop
         , onClick (SelectRecipe recipe)
         ]
-        [ Element.el [ Font.italic, Font.underline ] (text recipe.name)
-        , Element.paragraph []
-            (List.map
-                (\ingredient ->
-                    el
-                        (if Set.Any.member ingredient.material model.availableMaterials then
-                            []
+        [ Element.row []
+            [ drinkIcon recipe
+            , Element.el [ Font.italic, Font.underline ] (text recipe.name)
+            ]
+        , Element.paragraph [ paddingEach { edges | left = 5 } ]
+            (List.intersperse
+                (el [] (text ", "))
+                (List.map
+                    (\ingredient ->
+                        el
+                            (if Set.Any.member ingredient.material model.availableMaterials then
+                                []
 
-                         else
-                            [ strike ]
-                        )
-                        (text ingredient.material.name)
+                             else
+                                [ strike ]
+                            )
+                            (text ingredient.material.name)
+                    )
+                    recipe.ingredients
                 )
-                recipe.ingredients
-                |> List.intersperse
-                    (el [] (text ", "))
             )
         ]
 
@@ -528,6 +582,10 @@ displayRecipe model recipe =
     in
     Element.column [ spacing 20, alignTop ]
         ([ title recipe.name
+         , Element.row [ spacing 4, spacing 10 ]
+            [ Element.el [ alignTop ] (drinkIcon recipe)
+            , Element.paragraph [] [ text ("Served in a " ++ glassName recipe.glass) ]
+            ]
          , Element.column
             [ alignTop, spacing 8 ]
             (List.map
@@ -613,6 +671,32 @@ header model =
                 Input.labelRight []
                     (text "Equate whiskey")
             }
+        , Element.el []
+            (Element.link
+                [ Font.color blue ]
+                { url = "https://github.com/tmcw/flair", label = text "{source code}" }
+            )
+        , Element.el
+            [ paddingEach
+                { left = 40
+                , top = 0
+                , bottom = 0
+                , right = 5
+                }
+            ]
+            (text "Sort")
+        , Element.el []
+            (select
+                []
+                [ option [ value "Feasibility", Html.Events.onClick (SetSort Feasibility) ]
+                    [ Html.text "Feasibility"
+                    ]
+                , option [ value "Alphabetical", Html.Events.onClick (SetSort Alphabetical) ]
+                    [ Html.text "Alphabetical"
+                    ]
+                ]
+                |> html
+            )
         , Element.el
             [ paddingEach
                 { left = 40
@@ -755,7 +839,7 @@ view model =
             , Font.sansSerif
             ]
         ]
-        (Element.column []
+        (Element.column [ Element.width Element.fill ]
             [ header model
             , if model.mode == Grid then
                 gridView model
@@ -789,18 +873,6 @@ view model =
                                 ]
                                 (title
                                     "COCKTAILS"
-                                )
-                            , Element.el []
-                                (select
-                                    []
-                                    [ option [ value "Feasibility", Html.Events.onClick (SetSort Feasibility) ]
-                                        [ Html.text "Feasibility"
-                                        ]
-                                    , option [ value "Alphabetical", Html.Events.onClick (SetSort Alphabetical) ]
-                                        [ Html.text "Alphabetical"
-                                        ]
-                                    ]
-                                    |> html
                                 )
                             ]
                         , listRecipes model
