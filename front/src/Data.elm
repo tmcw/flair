@@ -523,6 +523,16 @@ recipes =
       , description = """Shake all ingredients together with ice. Strain into glass, garnish and serve."""
       , glass = Cocktail
       }
+    , { name = "Lemon drop"
+      , ingredients =
+            [ { material = vodka, quantity = CL 2.5 }
+            , { material = tripleSec, quantity = CL 2 }
+            , { material = lemonJuice, quantity = CL 1.5 }
+            , { material = sugar, quantity = None }
+            ]
+      , description = """Shake and strain into a chilled cocktail glass rimmed with sugar."""
+      , glass = Cocktail
+      }
     , { name = "Vesper"
       , ingredients =
             [ { material = gin, quantity = CL 6 }
