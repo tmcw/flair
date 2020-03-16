@@ -370,7 +370,7 @@ coffeeLiqueur =
 
 lilletBlanc : Material
 lilletBlanc =
-    { name = "Lillet blan", t = Spirit }
+    { name = "Lillet blanc", t = Spirit }
 
 
 type alias Recipe =
