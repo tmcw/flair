@@ -458,8 +458,10 @@ drinkIcon recipe =
         ChampagneFlute ->
             champagneFluteIcon
 
-        _ ->
-            copperMugIcon
+        -- These look _really_ similar and the icons are really small,
+        -- so winging it for now.
+        Highball ->
+            collinsIcon
 
 
 neighborBlock : Recipe -> Recipe -> Element.Element Msg
