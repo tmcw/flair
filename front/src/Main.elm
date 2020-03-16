@@ -733,7 +733,7 @@ view model =
             , Font.sansSerif
             ]
         ]
-        (Element.column []
+        (Element.column [ Element.width Element.fill ]
             [ header model
             , if model.mode == Grid then
                 gridView model
