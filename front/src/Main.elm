@@ -60,7 +60,14 @@ deriveMaterials model =
                 model.recipes
 
         insufficient =
-            List.sortBy (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.size) unsortedInsufficient
+            List.sortBy
+                (\recipe ->
+                    (missingIngredients model.availableMaterials recipe |> Set.Any.size |> toFloat)
+                        / (List.length recipe.ingredients
+                            |> toFloat
+                          )
+                )
+                unsortedInsufficient
 
         alphabetical =
             List.sortBy (\recipe -> recipe.name) model.recipes
@@ -238,7 +245,7 @@ getNext recipes target =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( case msg of
+    ( (case msg of
         SelectRecipe recipe ->
             { model
                 | selectedRecipe =
@@ -291,10 +298,12 @@ update msg model =
             { model | mode = mode }
 
         SetSubsituteWhiskey on ->
-            { model | substituteWhiskey = on } |> fuzzyWhiskey on |> deriveMaterials
+            { model | substituteWhiskey = on } |> fuzzyWhiskey on
 
         Ignored ->
             model
+      )
+        |> deriveMaterials
     , Cmd.none
     )
 
@@ -617,30 +626,10 @@ displayRecipe model recipe =
 
 listRecipes : Model -> Element.Element Msg
 listRecipes model =
-    let
-        ( sufficient, unsortedInsufficient ) =
-            List.partition
-                (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty)
-                model.recipes
-
-        insufficient =
-            List.sortBy (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.size) unsortedInsufficient
-
-        alphabetical =
-            List.sortBy (\recipe -> recipe.name) model.recipes
-
-        orderedRecipes =
-            case model.sort of
-                Feasibility ->
-                    sufficient ++ insufficient
-
-                Alphabetical ->
-                    alphabetical
-    in
     Element.column [ spacing 10, Element.width Element.fill ]
         (List.map
             (recipeBlock model)
-            orderedRecipes
+            model.recipes
         )
 
 
