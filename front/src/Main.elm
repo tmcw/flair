@@ -65,7 +65,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { recipes = recipes
       , materials = []
-      , selectedRecipe = List.head recipes
+      , selectedRecipe = Nothing
       , availableMaterials = Set.Any.empty materialKey -- Set.Any.fromList materialKey materials
       , units = Ml
       , mode = Normal
