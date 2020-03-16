@@ -464,7 +464,17 @@ recipeBlock model recipe =
 noneSelected : Element.Element Msg
 noneSelected =
     Element.column [ spacing 20, alignTop ]
-        [ Element.el [ Font.italic, Font.underline ] (text "Nothing selected")
+        [ Element.el [ Font.bold ] (text "Hi.")
+        , Element.paragraph [ spacing 10 ] [ el [] (text """
+        This is a website that I made about cocktails. I'm not a huge cocktail nerd (drinking is bad, probably), but think that they're cool.
+        And the world's pretty bad right now and making this has been calming.""") ]
+        , Element.paragraph [ spacing 10 ] [ el [] (text """It gave me a chance to both tinker with technology I usually don't use (Elm),
+        and explore some of the cool properties of cocktails: notably that they're pretty similar and have standardized ingredients,
+        so they can be described in relationship to each other.""") ]
+        , Element.paragraph [ spacing 10 ] [ el [] (text """So some of it might seem funky. By default, the list is sorted by 'feasibility': as you add
+    ingredients that you have, it'll put recipes that you can make (or barely make) closer to the top. Also, click on 'Grid' for a wacky adjacency grid
+    of cocktails and their ingredients.""") ]
+        , Element.paragraph [ spacing 10 ] [ el [] (text """Also, for vim fans, there’s j & k support.""") ]
         ]
 
 
