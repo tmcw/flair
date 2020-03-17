@@ -65,7 +65,7 @@ printQuantity units quantity =
                     String.fromFloat (a * 10) ++ " Ml"
 
                 Oz ->
-                    String.fromFloat (toFloat (floor (a * 0.3519503 * 100)) / 100) ++ " Cl"
+                    String.fromFloat (toFloat (floor (a * 0.3519503 * 100)) / 100) ++ " Oz"
 
         Tsp a ->
             String.fromFloat a ++ " Tsp"
