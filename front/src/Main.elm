@@ -3,7 +3,7 @@ module Main exposing (Msg(..), main, update, view)
 import Browser
 import Browser.Events
 import Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
-import Element exposing (Element, alignTop, centerX, el, html, padding, paddingEach, spacing, text)
+import Element exposing (Element, alignTop, centerX, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
 import Element.Events exposing (onClick)
@@ -161,7 +161,7 @@ toDirection string =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Browser.Events.onKeyDown keyDecoder
 
 
@@ -356,7 +356,7 @@ blue =
 
 checkboxIcon : Bool -> Element msg
 checkboxIcon checked =
-    Element.el
+    el
         [ Element.width
             (Element.px
                 10
@@ -416,7 +416,7 @@ edges =
 
 title : String -> Element.Element Msg
 title name =
-    Element.el
+    el
         [ bold
         , paddingEach { edges | bottom = 5, top = 10 }
         ]
@@ -432,7 +432,7 @@ typeMenu model t =
 
 listIngredients : Model -> Element.Element Msg
 listIngredients model =
-    Element.column [ spacing 8, alignTop, Element.width Element.shrink ]
+    column [ spacing 8, alignTop, Element.width Element.shrink ]
         (title "SPIRITS"
             :: typeMenu model Spirit
             ++ (title "SWEETENERS"
@@ -512,7 +512,7 @@ neighborBlock recipe neighbor =
                 |> Set.Any.toList
                 |> List.head
     in
-    Element.column
+    column
         [ spacing 10
         , Element.pointer
         , Element.width Element.fill
@@ -520,8 +520,8 @@ neighborBlock recipe neighbor =
         , alignTop
         , onClick (SelectRecipe neighbor)
         ]
-        [ Element.el [ Font.italic, Font.underline ] (text neighbor.name)
-        , Element.paragraph []
+        [ el [ Font.italic, Font.underline ] (text neighbor.name)
+        , paragraph []
             [ case ( add, remove ) of
                 ( Just a, Just b ) ->
                     el [] (text ("Add " ++ a.name ++ ", remove " ++ b.name))
@@ -547,7 +547,7 @@ recipeBlock model recipe =
         selected =
             model.selectedRecipe == Just recipe
     in
-    Element.column
+    column
         [ spacing 10
         , Element.pointer
         , padding 10
@@ -570,11 +570,11 @@ recipeBlock model recipe =
         , alignTop
         , onClick (SelectRecipe recipe)
         ]
-        [ Element.row []
+        [ row []
             [ drinkIcon recipe
-            , Element.el [ Font.italic, Font.underline ] (text recipe.name)
+            , el [ Font.italic, Font.underline ] (text recipe.name)
             ]
-        , Element.paragraph [ paddingEach { edges | left = 5 } ]
+        , paragraph [ paddingEach { edges | left = 5 } ]
             (List.intersperse
                 (el [] (text ", "))
                 (List.map
@@ -596,18 +596,18 @@ recipeBlock model recipe =
 
 noneSelected : Element.Element Msg
 noneSelected =
-    Element.column [ spacing 20, alignTop ]
-        [ Element.el [ Font.bold ] (text "Hi.")
-        , Element.paragraph [ spacing 10 ] [ el [] (text """
+    column [ spacing 20, alignTop ]
+        [ el [ Font.bold ] (text "Hi.")
+        , paragraph [ spacing 10 ] [ el [] (text """
         This is a website that I made about cocktails. I'm not a huge cocktail nerd (drinking is bad, probably), but think that they're cool.
         And the world's pretty bad right now and making this has been calming.""") ]
-        , Element.paragraph [ spacing 10 ] [ el [] (text """It gave me a chance to both tinker with technology I usually don't use (Elm),
+        , paragraph [ spacing 10 ] [ el [] (text """It gave me a chance to both tinker with technology I usually don't use (Elm),
         and explore some of the cool properties of cocktails: notably that they're pretty similar and have standardized ingredients,
         so they can be described in relationship to each other.""") ]
-        , Element.paragraph [ spacing 10 ] [ el [] (text """So some of it might seem funky. By default, the list is sorted by 'feasibility': as you add
+        , paragraph [ spacing 10 ] [ el [] (text """So some of it might seem funky. By default, the list is sorted by 'feasibility': as you add
     ingredients that you have, it'll put recipes that you can make (or barely make) closer to the top. Also, click on 'Grid' for a wacky adjacency grid
     of cocktails and their ingredients.""") ]
-        , Element.paragraph [ spacing 10 ] [ el [] (text """Also, for vim fans, there’s j & k support.""") ]
+        , paragraph [ spacing 10 ] [ el [] (text """Also, for vim fans, there’s j & k support.""") ]
         ]
 
 
@@ -617,17 +617,17 @@ displayRecipe model recipe =
         neighbors =
             getNeighbors model recipe
     in
-    Element.column [ spacing 20, alignTop ]
+    column [ spacing 20, alignTop ]
         ([ title recipe.name
-         , Element.row [ spacing 4, spacing 10 ]
-            [ Element.el [ alignTop ] (drinkIcon recipe)
-            , Element.paragraph [] [ text ("Served in a " ++ glassName recipe.glass) ]
+         , row [ spacing 4, spacing 10 ]
+            [ el [ alignTop ] (drinkIcon recipe)
+            , paragraph [] [ text ("Served in a " ++ glassName recipe.glass) ]
             ]
-         , Element.column
+         , column
             [ alignTop, spacing 8 ]
             (List.map
                 (\ingredient ->
-                    Element.paragraph []
+                    paragraph []
                         [ text
                             ("◦ "
                                 ++ printQuantity model.units ingredient.quantity
@@ -638,7 +638,7 @@ displayRecipe model recipe =
                 )
                 recipe.ingredients
             )
-         , Element.paragraph [ spacing 10, alignTop, Element.width Element.fill ] [ text recipe.description ]
+         , paragraph [ spacing 10, alignTop, Element.width Element.fill ] [ text recipe.description ]
          ]
             ++ (if List.isEmpty neighbors then
                     []
@@ -652,7 +652,7 @@ displayRecipe model recipe =
 
 listRecipes : Model -> Element.Element Msg
 listRecipes model =
-    Element.column [ spacing 10, Element.width Element.fill ]
+    column [ spacing 10, Element.width Element.fill ]
         (List.map
             (recipeBlock model)
             model.recipes
@@ -661,7 +661,7 @@ listRecipes model =
 
 header : Model -> Element.Element Msg
 header model =
-    Element.row [ Element.width Element.fill, padding 20 ]
+    row [ Element.width Element.fill, padding 20 ]
         [ Input.radioRow
             [ spacing 20
             ]
@@ -688,12 +688,12 @@ header model =
                 Input.labelRight []
                     (text "Equate whiskey")
             }
-        , Element.el []
+        , el []
             (Element.link
                 [ Font.color blue ]
                 { url = "https://github.com/tmcw/flair", label = text "{source code}" }
             )
-        , Element.el
+        , el
             [ paddingEach
                 { left = 40
                 , top = 0
@@ -702,7 +702,7 @@ header model =
                 }
             ]
             (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
-        , Element.el []
+        , el []
             (select
                 [ Html.Events.onInput SetSort
                 ]
@@ -715,7 +715,7 @@ header model =
                 ]
                 |> html
             )
-        , Element.el
+        , el
             [ paddingEach
                 { left = 40
                 , top = 0
@@ -758,13 +758,13 @@ renderDot material row =
             else
                 2
     in
-    Element.el
+    el
         [ Element.width (Element.px 15)
         , Element.height (Element.px 15)
         , Element.centerX
         , Element.centerY
         ]
-        (Element.el
+        (el
             [ Element.width (Element.px size)
             , Element.height (Element.px size)
             , Element.centerY
@@ -821,7 +821,7 @@ gridView model =
                 |> List.filter (\ingredient -> ingredient.t == Spirit)
                 |> List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient))
     in
-    Element.el
+    el
         [ paddingEach
             { top = 40
             , right = 0
@@ -832,11 +832,11 @@ gridView model =
         (Element.table []
             { data = model.recipes
             , columns =
-                { header = Element.el [ padding 10 ] (Element.text "")
+                { header = el [ padding 10 ] (Element.text "")
                 , width = Element.fill
                 , view =
                     \row ->
-                        Element.el [ padding 10, bold ]
+                        el [ padding 10, bold ]
                             (Element.text row.name)
                 }
                     :: List.map getColumn sortedMaterials
@@ -859,15 +859,15 @@ view model =
             , Font.sansSerif
             ]
         ]
-        (Element.column [ Element.width Element.fill ]
+        (column [ Element.width Element.fill ]
             [ header model
             , if model.mode == Grid then
                 gridView model
 
               else
-                Element.row
+                row
                     [ Element.width Element.fill, spacing 0 ]
-                    [ Element.column
+                    [ column
                         [ spacing 5
                         , padding 20
                         , alignTop
@@ -876,7 +876,7 @@ view model =
                         ]
                         [ listIngredients model
                         ]
-                    , Element.column
+                    , column
                         [ alignTop
                         , padding 20
                         , spacing 5
@@ -884,11 +884,11 @@ view model =
                         , Element.width
                             (Element.maximum 400 Element.fill)
                         ]
-                        [ Element.row
+                        [ row
                             [ Element.width Element.fill
                             , spacing 10
                             ]
-                            [ Element.el
+                            [ el
                                 [ paddingEach { edges | left = 10 }
                                 , Element.width Element.fill
                                 ]
@@ -898,7 +898,7 @@ view model =
                             ]
                         , listRecipes model
                         ]
-                    , Element.column
+                    , column
                         [ alignTop
                         , padding 20
                         , spacing 5
