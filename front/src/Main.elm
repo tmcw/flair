@@ -644,7 +644,7 @@ displayRecipe model recipe =
                     []
 
                 else
-                    title "NEIGHORS"
+                    title "NEIGHBORS"
                         :: List.map (neighborBlock recipe) neighbors
                )
         )
