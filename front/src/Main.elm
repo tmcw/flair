@@ -9,7 +9,8 @@ import Element.Border as Border
 import Element.Events exposing (onClick)
 import Element.Font as Font exposing (bold, strike)
 import Element.Input as Input
-import Html exposing (Html, option, select)
+import Element.Region
+import Html exposing (Html, label, option, select)
 import Html.Attributes exposing (value)
 import Html.Events
 import Icons exposing (champagneFluteIcon, cocktailIcon, collinsIcon, copperMugIcon, oldFashionedIcon)
@@ -325,7 +326,7 @@ black =
 
 blue : Element.Color
 blue =
-    Element.rgb255 129 127 224
+    Element.rgb255 29 27 124
 
 
 checkboxIcon : Bool -> Element msg
@@ -675,10 +676,10 @@ header model =
                 , right = 5
                 }
             ]
-            (text "Sort")
+            (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
         , Element.el []
             (select
-                []
+                [ Html.Attributes.id "sort" ]
                 [ option [ value "Feasibility", Html.Events.onClick (SetSort Feasibility) ]
                     [ Html.text "Feasibility"
                     ]
@@ -696,8 +697,8 @@ header model =
                 , right = 5
                 }
             ]
-            (text "Units")
-        , select []
+            (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
+        , select [ Html.Attributes.id "units" ]
             [ option [ value "Ml", Html.Events.onClick (SetUnits Ml) ]
                 [ Html.text "Ml"
                 ]
@@ -851,6 +852,7 @@ view model =
                         [ alignTop
                         , padding 20
                         , spacing 5
+                        , Element.Region.navigation
                         , Element.width
                             (Element.maximum 400 Element.fill)
                         ]
@@ -872,6 +874,7 @@ view model =
                         [ alignTop
                         , padding 20
                         , spacing 5
+                        , Element.Region.mainContent
                         , Element.width (Element.maximum 640 Element.fill)
                         ]
                         [ case model.selectedRecipe of
