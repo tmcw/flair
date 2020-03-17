@@ -178,10 +178,10 @@ main =
 type Msg
     = SelectRecipe Recipe
     | ToggleIngredient Material Bool
-    | SetUnits Units
+    | SetUnits String
     | SetMode Mode
     | SetSubsituteWhiskey Bool
-    | SetSort Sort
+    | SetSort String
     | MoveUp
     | MoveDown
     | Ignored
@@ -258,10 +258,35 @@ update msg model =
             }
 
         SetUnits units ->
-            { model | units = units }
+            { model
+                | units =
+                    case units of
+                        "Cl" ->
+                            Cl
+
+                        "Oz" ->
+                            Oz
+
+                        "Ml" ->
+                            Ml
+
+                        _ ->
+                            Cl
+            }
 
         SetSort sort ->
-            { model | sort = sort }
+            { model
+                | sort =
+                    case sort of
+                        "Alphabetical" ->
+                            Alphabetical
+
+                        "Feasibility" ->
+                            Feasibility
+
+                        _ ->
+                            Alphabetical
+            }
 
         MoveUp ->
             { model
@@ -679,11 +704,12 @@ header model =
             (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
         , Element.el []
             (select
-                [ Html.Attributes.id "sort" ]
-                [ option [ value "Feasibility", Html.Events.onClick (SetSort Feasibility) ]
+                [ Html.Events.onInput SetSort
+                ]
+                [ option [ value "Feasibility" ]
                     [ Html.text "Feasibility"
                     ]
-                , option [ value "Alphabetical", Html.Events.onClick (SetSort Alphabetical) ]
+                , option [ value "Alphabetical" ]
                     [ Html.text "Alphabetical"
                     ]
                 ]
@@ -698,14 +724,16 @@ header model =
                 }
             ]
             (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
-        , select [ Html.Attributes.id "units" ]
-            [ option [ value "Ml", Html.Events.onClick (SetUnits Ml) ]
+        , select
+            [ Html.Events.onInput SetUnits
+            ]
+            [ option [ value "Ml" ]
                 [ Html.text "Ml"
                 ]
-            , option [ value "Cl", Html.Events.onClick (SetUnits Cl) ]
+            , option [ value "Cl" ]
                 [ Html.text "Cl"
                 ]
-            , option [ value "Oz", Html.Events.onClick (SetUnits Oz) ]
+            , option [ value "Oz" ]
                 [ Html.text "Oz"
                 ]
             ]
