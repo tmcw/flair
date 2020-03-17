@@ -430,23 +430,46 @@ listIngredients model =
 glassName : Glass -> String
 glassName glass =
     case glass of
-        OldFashioned ->
-            "Old Fashioned glass"
-
-        Cocktail ->
-            "Cocktail glass"
-
+        -- Tumblers
         Collins ->
             "Collins glass"
 
-        CopperMug ->
-            "Copper mug"
+        Highball ->
+            "Highball glass"
+
+        OldFashioned ->
+            "Old Fashioned glass"
+
+        -- Stemware:
 
         ChampagneFlute ->
             "Champagne flute"
 
-        Data.Highball ->
-            "Highball glass"
+        Cocktail ->
+            "Cocktail glass"
+
+        Hurricane ->
+            "Hurricane glass"
+
+        Margarita ->
+            "Margarita glass"
+
+        Wine ->
+            "Wine glass"
+
+        -- Other:
+
+        CopperMug ->
+            "Copper mug"
+
+        IrishCoffeeMug ->
+            "Irish coffee mug"
+
+        SteelCup ->
+            "Steel cup"
+
+        ZombieGlass ->
+            "Zombie glass"
 
 
 drinkIcon : Recipe -> Element.Element Msg
@@ -472,6 +495,19 @@ drinkIcon recipe =
         Highball ->
             collinsIcon
 
+        -- To do:
+        Margarita ->
+            cocktailIcon
+        Hurricane ->
+            cocktailIcon
+        IrishCoffeeMug ->
+            cocktailIcon
+        SteelCup ->
+            cocktailIcon
+        Wine ->
+            cocktailIcon
+        ZombieGlass ->
+            cocktailIcon
 
 neighborBlock : Recipe -> Recipe -> Element.Element Msg
 neighborBlock recipe neighbor =
