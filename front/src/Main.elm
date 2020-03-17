@@ -705,6 +705,8 @@ header model =
         , el []
             (select
                 [ Html.Events.onInput SetSort
+                , Html.Attributes.id
+                    "sort"
                 ]
                 [ option [ value "Feasibility" ]
                     [ Html.text "Feasibility"
@@ -726,6 +728,8 @@ header model =
             (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
         , select
             [ Html.Events.onInput SetUnits
+            , Html.Attributes.id
+                "units"
             ]
             [ option [ value "Ml" ]
                 [ Html.text "Ml"
