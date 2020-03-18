@@ -409,17 +409,29 @@ listIngredients model =
     Element.column [ spacing 8, alignTop, Element.width Element.shrink ]
         (title "SPIRITS"
             :: typeMenu model Spirit
-            ++ (title "SWEETENERS"
-                    :: typeMenu model Sweetener
+            ++ (title "LIQUEUR"
+                    :: typeMenu model Liqueur
                )
-            ++ (title "VERMOUTH"
-                    :: typeMenu model Vermouth
+            ++ (title "FORTIFIED"
+                    :: typeMenu model Fortified
+               )
+            ++ (title "BASE"
+                    :: typeMenu model Base
                )
             ++ (title "BITTERS"
                     :: typeMenu model Bitters
                )
-            ++ (title "GARNISH"
-                    :: typeMenu model Garnish
+            ++ (title "SYRUP"
+                    :: typeMenu model Syrup
+               )
+            ++ (title "JUICE"
+                    :: typeMenu model Juice
+               )
+            ++ (title "FRUIT"
+                    :: typeMenu model Fruit
+               )
+            ++ (title "SEASONING"
+                    :: typeMenu model Seasoning
                )
             ++ (title "OTHER"
                     :: typeMenu model Other

@@ -4,12 +4,20 @@ import Quantity exposing (Quantity(..))
 
 
 type IngredientType
-    = Spirit
-    | Garnish
-    | Sweetener
-    | Vermouth
+    -- Main alcohol types:
+    = Base -- Fermented base: Sparkling wine, beer, cider, etc.
+    | Fortified -- Fermented base with extra alcohol: Port, sherry, vermouth, americano, etc.
+    | Liqueur -- Spirit is infused / macerated with herb, spice, fruit; Amari, crème, etc.
+    | Spirit -- Fermented base is distilled: Whiskey, rum, vodka, gin, tequila, brandy, etc.
+
+    -- Main non-alcoholic types:
+    | Bitters -- Technically often high alcohol but used sparingly.
+    | Fruit
+    | Juice
+    | Seasoning -- Salt, herbs, spices.
+    | Syrup
+
     | Other
-    | Bitters
 
 
 type Glass
@@ -61,7 +69,7 @@ scotchWhiskey =
 
 drambuie : Material
 drambuie =
-    { name = "Drambuie", t = Spirit }
+    { name = "Drambuie", t = Liqueur }
 
 
 bourbonWhiskey : Material
@@ -96,17 +104,17 @@ gin =
 
 whiteCremeDeMenthe : Material
 whiteCremeDeMenthe =
-    { name = "White crème de menthe", t = Spirit }
+    { name = "White crème de menthe", t = Liqueur }
 
 
 cremeDeMure : Material
 cremeDeMure =
-    { name = "Crème de Mure", t = Spirit }
+    { name = "Crème de Mure", t = Liqueur }
 
 
 maraschino : Material
 maraschino =
-    { name = "Maraschino", t = Spirit }
+    { name = "Maraschino", t = Liqueur }
 
 
 brandy : Material
@@ -116,13 +124,13 @@ brandy =
 
 apricotBrandy : Material
 apricotBrandy =
-    { name = "Apricot brandy", t = Spirit }
+    { name = "Apricot brandy", t = Liqueur }
 
 
 -- `port` is a reserved word.
 pport : Material
 pport =
-    { name = "Port", t = Spirit }
+    { name = "Port", t = Fortified }
 
 
 calvados : Material
@@ -150,39 +158,34 @@ peychaudsBitters =
     { name = "Peychaud’s bitters", t = Bitters }
 
 
-citrusRind : Material
-citrusRind =
-    { name = "Citrus rind", t = Garnish }
-
-
 lemon : Material
 lemon =
-    { name = "Lemon", t = Garnish }
+    { name = "Lemon", t = Fruit }
 
 
 blackberry : Material
 blackberry =
-    { name = "Blackberry", t = Garnish }
+    { name = "Blackberry", t = Fruit }
 
 
 cherry : Material
 cherry =
-    { name = "Cherry", t = Garnish }
+    { name = "Cherry", t = Fruit }
 
 
 pineapple : Material
 pineapple =
-    { name = "Pineapple", t = Garnish }
+    { name = "Pineapple", t = Fruit }
 
 
 sweetRedVermouth : Material
 sweetRedVermouth =
-    { name = "Sweet red vermouth", t = Vermouth }
+    { name = "Sweet red vermouth", t = Fortified }
 
 
 dryVermouth : Material
 dryVermouth =
-    { name = "Dry vermouth", t = Vermouth }
+    { name = "Dry vermouth", t = Fortified }
 
 
 cognac : Material
@@ -192,27 +195,27 @@ cognac =
 
 tripleSec : Material
 tripleSec =
-    { name = "Triple sec", t = Spirit }
+    { name = "Triple sec", t = Liqueur }
 
 
 grenadine : Material
 grenadine =
-    { name = "Grenadine", t = Spirit }
+    { name = "Grenadine", t = Syrup }
 
 
 oj : Material
 oj =
-    { name = "Orange juice", t = Other }
+    { name = "Orange juice", t = Juice }
 
 
 pineappleJuice : Material
 pineappleJuice =
-    { name = "Pineapple juice", t = Other }
+    { name = "Pineapple juice", t = Juice }
 
 
 lime : Material
 lime =
-    { name = "Lime", t = Garnish }
+    { name = "Lime", t = Fruit }
 
 
 cachaca : Material
@@ -222,52 +225,52 @@ cachaca =
 
 whiteVermouth : Material
 whiteVermouth =
-    { name = "White vermouth", t = Vermouth }
+    { name = "White vermouth", t = Fortified }
 
 
 sugar : Material
 sugar =
-    { name = "Sugar", t = Sweetener }
+    { name = "Sugar", t = Seasoning }
 
 
 absinthe : Material
 absinthe =
-    { name = "Absinthe", t = Spirit }
+    { name = "Absinthe", t = Liqueur }
 
 
 campari : Material
 campari =
-    { name = "Campari", t = Spirit }
+    { name = "Campari", t = Liqueur }
 
 
 fernetBranca : Material
 fernetBranca =
-    { name = "Fernet Branca", t = Spirit }
+    { name = "Fernet Branca", t = Liqueur }
 
 
 simpleSyrup : Material
 simpleSyrup =
-    { name = "Simple syrup", t = Sweetener }
+    { name = "Simple syrup", t = Syrup }
 
 
 gommeSyrup : Material
 gommeSyrup =
-    { name = "Gomme syrup", t = Sweetener }
+    { name = "Gomme syrup", t = Syrup }
 
 
 raspberrySyrup : Material
 raspberrySyrup =
-    { name = "Raspberry syrup", t = Sweetener }
+    { name = "Raspberry syrup", t = Syrup }
 
 
 raspberryLiqueur : Material
 raspberryLiqueur =
-    { name = "Raspberry liqueur", t = Spirit }
+    { name = "Raspberry liqueur", t = Liqueur }
 
 
 orange : Material
 orange =
-    { name = "Orange", t = Garnish }
+    { name = "Orange", t = Fruit }
 
 
 egg : Material
@@ -287,12 +290,12 @@ eggWhite =
 
 cider : Material
 cider =
-    { name = "Cider", t = Spirit }
+    { name = "Cider", t = Base }
 
 
 champagne : Material
 champagne =
-    { name = "Champagne", t = Other }
+    { name = "Champagne", t = Base }
 
 
 tequila : Material
@@ -322,7 +325,7 @@ darkRum =
 
 limeJuice : Material
 limeJuice =
-    { name = "Lime juice", t = Other }
+    { name = "Lime juice", t = Juice }
 
 
 cream : Material
@@ -332,12 +335,12 @@ cream =
 
 brownCremeDeCacao : Material
 brownCremeDeCacao =
-    { name = "Brown crème de cacao", t = Other }
+    { name = "Brown crème de cacao", t = Liqueur }
 
 
 whiteCremeDeCacao : Material
 whiteCremeDeCacao =
-    { name = "White crème de cacao", t = Other }
+    { name = "White crème de cacao", t = Liqueur }
 
 
 lightCream : Material
@@ -362,12 +365,12 @@ cola =
 
 nutmeg : Material
 nutmeg =
-    { name = "Nutmeg", t = Other }
+    { name = "Nutmeg", t = Seasoning }
 
 
 lemonJuice : Material
 lemonJuice =
-    { name = "Lemon juice", t = Other }
+    { name = "Lemon juice", t = Juice }
 
 
 vodka : Material
@@ -387,12 +390,12 @@ gingerAle =
 
 prosecco : Material
 prosecco =
-    { name = "Prosecco", t = Spirit }
+    { name = "Prosecco", t = Base }
 
 
 mint : Material
 mint =
-    { name = "Mint", t = Garnish }
+    { name = "Mint", t = Seasoning }
 
 
 peachPuree : Material
@@ -402,12 +405,12 @@ peachPuree =
 
 coffeeLiqueur : Material
 coffeeLiqueur =
-    { name = "Coffee liqueur", t = Other }
+    { name = "Coffee liqueur", t = Liqueur }
 
 
 lilletBlanc : Material
 lilletBlanc =
-    { name = "Lillet blanc", t = Spirit }
+    { name = "Lillet blanc", t = Fortified }
 
 
 irishWhiskey : Material
@@ -422,100 +425,102 @@ oldTomGin =
 
 greenCremeDeMenthe : Material
 greenCremeDeMenthe =
-    { name = "Green crème de menthe", t = Spirit }
+    { name = "Green crème de menthe", t = Liqueur }
 
 
 cremeDeCassis : Material
 cremeDeCassis =
-    { name = "Crème de Cassis", t = Spirit }
+    { name = "Crème de Cassis", t = Liqueur }
 
 
 amaretto : Material
 amaretto =
-    { name = "Amaretto", t = Spirit }
+    { name = "Amaretto", t = Liqueur }
 
 
 olive : Material
 olive =
-    { name = "Olive", t = Garnish }
+    { name = "Olive", t = Other }
 
 
 dryWhiteWine : Material
 dryWhiteWine =
-    { name = "Dry white wine", t = Other }
+    { name = "Dry white wine", t = Base }
 
 
 sparklingWine : Material
 sparklingWine =
-    { name = "Sparkling wine", t = Other }
+    { name = "Sparkling wine", t = Base }
+
 
 peachSchnapps : Material
 peachSchnapps =
-    { name = "Peach schnapps", t = Spirit }
+    { name = "Peach schnapps", t = Liqueur }
 
 
 cherryLiqueur : Material
 cherryLiqueur =
-    { name = "Cherry liqueur", t = Spirit }
+    { name = "Cherry liqueur", t = Liqueur }
 
 
 domBenedictine : Material
 domBenedictine =
-    { name = "DOM Bénédictine", t = Spirit }
+    { name = "DOM Bénédictine", t = Liqueur }
+
 
 oliveJuice : Material
 oliveJuice =
-    { name = "Olive juice", t = Other }
+    { name = "Olive juice", t = Juice }
 
 
 cranberryJuice : Material
 cranberryJuice =
-    { name = "Cranberry juice", t = Other }
+    { name = "Cranberry juice", t = Juice }
 
 
 grapefruitJuice : Material
 grapefruitJuice =
-    { name = "Grapefruit juice", t = Other }
+    { name = "Grapefruit juice", t = Juice }
 
 
 tomatoJuice : Material
 tomatoJuice =
-    { name = "Tomato juice", t = Other }
+    { name = "Tomato juice", t = Juice }
 
 
 pepper : Material
 pepper =
-    { name = "Pepper", t = Other }
+    { name = "Pepper", t = Seasoning }
 
 
 salt : Material
 salt =
-    { name = "Salt", t = Other }
+    { name = "Salt", t = Seasoning }
 
 
 celerySalt : Material
 celerySalt =
-    { name = "Celery salt", t = Other }
+    { name = "Celery salt", t = Seasoning }
 
 
 caneSugar : Material
 caneSugar =
-    { name = "Cane sugar", t = Sweetener }
+    { name = "Cane sugar", t = Seasoning }
 
 
 powderedSugar : Material
 powderedSugar =
-    { name = "Powdered Sugar", t = Sweetener }
+    { name = "Powdered Sugar", t = Seasoning }
 
 
 aperol : Material
 aperol =
-    { name = "Aperol", t = Spirit }
+    { name = "Aperol", t = Liqueur }
 
 
 galliano : Material
 galliano =
-    { name = "Galliano", t = Spirit }
+    { name = "Galliano", t = Liqueur }
 
 
 pisco : Material
@@ -525,17 +530,17 @@ pisco =
 
 orgeatSyrup : Material
 orgeatSyrup =
-    { name = "Orgeat (almond) syrup", t = Sweetener }
+    { name = "Orgeat (almond) syrup", t = Syrup }
 
 
 cinnamonSyrup : Material
 cinnamonSyrup =
-    { name = "Cinnamon syrup", t = Sweetener }
+    { name = "Cinnamon syrup", t = Syrup }
 
 
 agaveNectar : Material
 agaveNectar =
-    { name = "Agave nectar", t = Sweetener }
+    { name = "Agave nectar", t = Syrup }
 
 
 coconutCream : Material
@@ -560,12 +565,12 @@ worcestershireSauce =
 
 irishCream : Material
 irishCream =
-    { name = "Irish cream liqueur", t = Other }
+    { name = "Irish cream liqueur", t = Liqueur }
 
 
 falernum : Material
 falernum =
-    { name = "Falernum", t = Other }
+    { name = "Falernum", t = Liqueur }
 
 
 tabasco : Material
