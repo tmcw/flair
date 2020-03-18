@@ -109,7 +109,7 @@ whiteCremeDeMenthe =
 
 cremeDeMure : Material
 cremeDeMure =
-    { name = "Crème de Mure", t = Liqueur }
+    { name = "Crème de mure", t = Liqueur }
 
 
 maraschino : Material
@@ -430,7 +430,7 @@ greenCremeDeMenthe =
 
 cremeDeCassis : Material
 cremeDeCassis =
-    { name = "Crème de Cassis", t = Liqueur }
+    { name = "Crème de cassis", t = Liqueur }
 
 
 amaretto : Material
@@ -510,7 +510,7 @@ caneSugar =
 
 powderedSugar : Material
 powderedSugar =
-    { name = "Powdered Sugar", t = Seasoning }
+    { name = "Powdered sugar", t = Seasoning }
 
 
 aperol : Material

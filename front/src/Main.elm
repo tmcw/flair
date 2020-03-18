@@ -41,7 +41,7 @@ type alias Model =
     , availableMaterials : MaterialSet
     , units : Units
     , mode : Mode
-    , substituteWhiskey : Bool
+    , pedantic : Bool
     , sort : Sort
     }
 
@@ -98,7 +98,7 @@ init =
       , availableMaterials = Set.Any.empty materialKey -- Set.Any.fromList materialKey materials
       , units = Ml
       , mode = Normal
-      , substituteWhiskey = False
+      , pedantic = True
       , sort = Feasibility
       }
         |> deriveMaterials
@@ -106,17 +106,17 @@ init =
     )
 
 
-fuzzyWhiskey : Bool -> Model -> Model
-fuzzyWhiskey substituteWhiskey model =
+fuzzyIngredients : Bool -> Model -> Model
+fuzzyIngredients pedantic model =
     { model
         | recipes =
-            if substituteWhiskey then
+            if not pedantic then
                 List.map
                     (\recipe ->
                         { recipe
                             | ingredients =
                                 List.map
-                                    fuzzyWhiskeyIngredient
+                                    fuzzyIngredient
                                     recipe.ingredients
                         }
                     )
@@ -127,13 +127,73 @@ fuzzyWhiskey substituteWhiskey model =
     }
 
 
-fuzzyWhiskeyIngredient : Ingredient -> Ingredient
-fuzzyWhiskeyIngredient ingredient =
+fuzzyIngredient : Ingredient -> Ingredient
+fuzzyIngredient ingredient =
     { ingredient
         | material =
             if ingredient.material.name |> String.toLower |> String.contains "whiskey" then
                 { name = "Whiskey"
                 , t = Spirit
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "rum" then
+                { name = "Rum"
+                , t = Spirit
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "cachaça" then
+                { name = "Rum"
+                , t = Spirit
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "gin" then
+                { name = "Gin"
+                , t = Spirit
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "cognac" then
+                { name = "Brandy"
+                , t = Spirit
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "crème de menthe" then
+                { name = "Crème de menthe"
+                , t = Liqueur
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "crème de cacao" then
+                { name = "Crème de cacao"
+                , t = Liqueur
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "prosecco" then
+                { name = "Sparkling wine"
+                , t = Base
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "champagne" then
+                { name = "Sparkling wine"
+                , t = Base
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "gomme" then
+                { name = "Simple syrup"
+                , t = Syrup
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "sugar" then
+                { name = "Sugar"
+                , t = Seasoning
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "salt" then
+                { name = "Salt"
+                , t = Seasoning
+                }
+
+            else if ingredient.material.name |> String.toLower |> String.contains "espresso" then
+                { name = "Coffee"
+                , t = Other
                 }
 
             else
@@ -179,7 +239,7 @@ type Msg
     | ToggleIngredient Material Bool
     | SetUnits Units
     | SetMode Mode
-    | SetSubsituteWhiskey Bool
+    | SetSubsitute Bool
     | SetSort Sort
     | MoveUp
     | MoveDown
@@ -297,8 +357,8 @@ update msg model =
         SetMode mode ->
             { model | mode = mode }
 
-        SetSubsituteWhiskey on ->
-            { model | substituteWhiskey = on } |> fuzzyWhiskey on
+        SetSubsitute on ->
+            { model | pedantic = on } |> fuzzyIngredients on
 
         Ignored ->
             model
@@ -703,12 +763,12 @@ header model =
                 , right = 5
                 }
             ]
-            { onChange = SetSubsituteWhiskey
+            { onChange = SetSubsitute
             , icon = Input.defaultCheckbox
-            , checked = model.substituteWhiskey
+            , checked = model.pedantic
             , label =
                 Input.labelRight []
-                    (text "Equate whiskey")
+                    (text "I’m pedantic")
             }
         , Element.el []
             (Element.link
@@ -833,7 +893,7 @@ gridView : Model -> Element.Element Msg
 gridView model =
     let
         mod =
-            fuzzyWhiskey True model
+            fuzzyIngredients True model
 
         sortedMaterials =
             mod.materials
