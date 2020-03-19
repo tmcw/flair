@@ -420,7 +420,12 @@ irishWhiskey =
 
 oldTomGin : Material
 oldTomGin =
-    { name = "Old Tom Gin", t = Spirit }
+    { name = "Old tom gin", t = Spirit }
+
+
+londonDryGin : Material
+londonDryGin =
+    { name = "London dry gin", t = Spirit }
 
 
 greenCremeDeMenthe : Material
@@ -581,6 +586,16 @@ tabasco =
 celery : Material
 celery =
     { name = "Celery", t = Other }
+
+
+aromaticBitters : Material
+aromaticBitters =
+    { name = "Aromatic bitters", t = Bitters }
+
+
+greenChartreuse : Material
+greenChartreuse =
+    { name = "Green Chartreuse", t = Bitters }
 
 
 type alias Recipe =
@@ -776,15 +791,16 @@ recipes =
       }
 
     -- https://en.wikipedia.org/wiki/Boulevardier_(cocktail)
+    -- https://iba-world.com/iba-official-cocktails/boulevardier/
     , { name = "Boulevardier"
       , ingredients =
-            [ { material = bourbonWhiskey, quantity = CL 3 }
+            [ { material = bourbonWhiskey, quantity = CL 4.5 }
             , { material = sweetRedVermouth, quantity = CL 3 }
             , { material = campari, quantity = CL 3 }
             , { material = orange, quantity = Custom "peel" }
             , { material = cherry, quantity = Whole 1 }
             ]
-      , description = """Stir with ice, strain, garnish with orange peel or cherry, and serve."""
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with a orange zest, optionally a lemon zest."""
       , glass = OldFashioned
       }
 
@@ -1626,5 +1642,61 @@ recipes =
             ]
       , description = """Add all ingredients into an electric blender with 170 grams of cracked ice. With pulse bottom blend for a few seconds. Serve in a tall tumbler glass. Garnish with mint leaves."""
       , glass = ZombieGlass
+      }
+
+    -- https://iba-world.com/iba-official-cocktails/brandy-crusta/
+    , { name = "Brandy crusta"
+      , ingredients =
+            [ { material = brandy, quantity = CL 5.25 }
+            , { material = lemonJuice, quantity = CL 1.5 }
+            , { material = maraschino, quantity = CL 0.75 }
+            , { material = tripleSec, quantity = Tsp 1 }
+            , { material = simpleSyrup, quantity = Tsp 1 }
+            , { material = aromaticBitters, quantity = Dash 2 }
+            , { material = orange, quantity = Slice 1 }
+            , { material = powderedSugar, quantity = Tsp 1 }
+            ]
+      , description = """Mix together all ingredients with ice cubes in a mixing glass and strain into prepared slim cocktail glass. Rub a slice of orange (or lemon) around the rim of the glass and dip it in pulverized white sugar, so that the sugar will adhere to the edge of the glass. Carefully curling place the orange/lemon peel around the inside of the glass."""
+      , glass = Cocktail
+      }
+
+    -- https://en.wikipedia.org/wiki/Hanky-Panky_cocktail
+    -- https://iba-world.com/iba-official-cocktails/hanky-panky/
+    , { name = "Hanky panky"
+      , ingredients =
+            [ { material = londonDryGin, quantity = CL 4.5 }
+            , { material = sweetRedVermouth, quantity = CL 4.5 }
+            , { material = fernetBranca, quantity = CL 0.75 }
+            , { material = orange, quantity = Custom "zest" }
+            ]
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with orange zest."""
+      , glass = Cocktail
+      }
+
+    -- https://en.wikipedia.org/wiki/Last_Word_(cocktail)
+    -- https://iba-world.com/iba-official-cocktails/last-word/
+    , { name = "Last word"
+      , ingredients =
+            [ { material = gin, quantity = CL 2.25 }
+            , { material = greenChartreuse, quantity = CL 2.25 }
+            , { material = maraschino, quantity = CL 2.25 }
+            , { material = limeJuice, quantity = CL 2.25 }
+            ]
+      , description = """Add all ingredients into a cocktail shaker. Shake with ice and strain into a chilled cocktail glass."""
+      , glass = Cocktail
+      }
+
+    -- https://en.wikipedia.org/wiki/Martinez_(cocktail)
+    -- https://iba-world.com/iba-official-cocktails/martinez/
+    , { name = "Last word"
+      , ingredients =
+            [ { material = londonDryGin, quantity = CL 4.5 }
+            , { material = sweetRedVermouth, quantity = CL 4.5 }
+            , { material = maraschino, quantity = Tsp 1 }
+            , { material = orangeBitters, quantity = Dash 2 }
+            , { material = lemon, quantity = Custom "zest" }
+            ]
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with Lemon zest."""
+      , glass = Cocktail
       }
     ]
