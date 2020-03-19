@@ -147,6 +147,12 @@ fuzzyIngredient ingredient =
                 , t = Spirit
                 }
 
+            else if ingredient.material.name |> String.toLower |> String.contains "ginger" then
+                { name = "Ginger beer"
+                , t = Spirit
+                }
+
+            -- Make sure this is below `ginger` or fix it.
             else if ingredient.material.name |> String.toLower |> String.contains "gin" then
                 { name = "Gin"
                 , t = Spirit
