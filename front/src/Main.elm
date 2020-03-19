@@ -12,7 +12,7 @@ import Element.Input as Input
 import Html exposing (Html, option, select)
 import Html.Attributes exposing (value)
 import Html.Events
-import Icons exposing (champagneFluteIcon, cocktailIcon, collinsIcon, copperMugIcon, oldFashionedIcon)
+import Icons exposing (champagneFluteIcon, cocktailIcon, collinsIcon, copperMugIcon, highballIcon, hurricaneIcon, irishCoffeeIcon, margaritaIcon, oldFashionedIcon, steelCupIcon, wineIcon)
 import Json.Decode as Decode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
 import Set.Any exposing (AnySet)
@@ -513,7 +513,6 @@ glassName glass =
             "Old Fashioned glass"
 
         -- Stemware:
-
         ChampagneFlute ->
             "Champagne flute"
 
@@ -530,7 +529,6 @@ glassName glass =
             "Wine glass"
 
         -- Other:
-
         CopperMug ->
             "Copper mug"
 
@@ -565,21 +563,27 @@ drinkIcon recipe =
         -- These look _really_ similar and the icons are really small,
         -- so winging it for now.
         Highball ->
-            collinsIcon
+            highballIcon
 
         -- To do:
         Margarita ->
-            cocktailIcon
+            margaritaIcon
+
         Hurricane ->
-            cocktailIcon
+            hurricaneIcon
+
         IrishCoffeeMug ->
-            cocktailIcon
+            irishCoffeeIcon
+
         SteelCup ->
-            cocktailIcon
+            steelCupIcon
+
         Wine ->
-            cocktailIcon
+            wineIcon
+
         ZombieGlass ->
-            cocktailIcon
+            collinsIcon
+
 
 neighborBlock : Recipe -> Recipe -> Element.Element Msg
 neighborBlock recipe neighbor =
