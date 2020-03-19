@@ -940,7 +940,7 @@ gridView model =
 
         sortedMaterials =
             mod.materials
-                |> List.filter (\ingredient -> ingredient.t == Spirit)
+                |> List.filter (\ingredient -> ingredient.t == Spirit || ingredient.t == Liqueur || ingredient.t == Fortified || ingredient.t == Base)
                 |> List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient))
     in
     el
