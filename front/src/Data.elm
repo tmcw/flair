@@ -1333,7 +1333,7 @@ recipes =
       , glass = Margarita
       }
     -- https://iba-world.com/new-era-drinks/tommys-margarita/
-    , { name = "Tommy’s Margarita"
+    , { name = "Tommy’s margarita"
       , ingredients =
             [ { material = tequila, quantity = CL 4.5 }
             , { material = limeJuice, quantity = CL 1.5 }
