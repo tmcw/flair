@@ -595,7 +595,7 @@ aromaticBitters =
 
 greenChartreuse : Material
 greenChartreuse =
-    { name = "Green Chartreuse", t = Bitters }
+    { name = "Green Chartreuse", t = Liqueur }
 
 
 type alias Recipe =
