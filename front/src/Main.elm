@@ -13,12 +13,76 @@ import Element.Region
 import Html exposing (Html, label, option, select)
 import Html.Attributes exposing (value)
 import Html.Events
-import Icons exposing (champagneFluteIcon, cocktailIcon, collinsIcon, copperMugIcon, highballIcon, hurricaneIcon, irishCoffeeIcon, margaritaIcon, oldFashionedIcon, steelCupIcon, wineIcon)
 import Json.Decode as Decode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
 import Set.Any exposing (AnySet)
-import Svg exposing (svg)
-import Svg.Attributes
+import Svg exposing (path, svg)
+import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width, x1, x2, y1, y2)
+
+
+icon : String -> Element.Element Msg
+icon pathSpec =
+    svg
+        [ width "20", height "20", fill "none", viewBox "0 0 20 20" ]
+        [ path [ d pathSpec, stroke "currentColor", strokeWidth "1" ]
+            []
+        ]
+        |> html
+
+
+champagneFluteIcon : Element.Element Msg
+champagneFluteIcon =
+    icon "M9.25 17v-5.616L8 7.5 8.5 3h3l.5 4.5-1.25 3.884V17H12v.63H8V17h1.25zM8 4.856h3.616"
+
+
+cocktailIcon : Element.Element Msg
+cocktailIcon =
+    icon "M9 9.5L5.5 4h9l-3.501 5.5v4.75H13v1.25H7v-1.25h2.056L9 9.5zm-2.5-4h7"
+
+
+collinsIcon : Element.Element Msg
+collinsIcon =
+    icon "M13 4H7v12.5c.5.25 1.5.5 3 .5s2.712-.24 3-.5V4zm-6 6.554l6-.054"
+
+
+copperMugIcon : Element.Element Msg
+copperMugIcon =
+    icon "M13 5H5v9.973c.593.213 2.024.527 4 .527s3.605-.314 4-.527V5zm0 2.5h3V12h-3"
+
+
+highballIcon : Element.Element Msg
+highballIcon =
+    icon "M13 4H6v11c.512.239 1.792.5 3.5.5s3.158-.261 3.5-.5V4zm-7 6h7"
+
+
+hurricaneIcon : Element.Element Msg
+hurricaneIcon =
+    icon "M9.25 17.5V14L7.5 12.5 7 10l.5-1.75.25-1.75-.25-1.75L7 3h6l-.5 1.75-.25 1.75.25 1.75L13 10l-.5 2.5-1.75 1.5v3.5h2.05v.5H7.196v-.5H9.25z"
+
+
+irishCoffeeIcon : Element.Element Msg
+irishCoffeeIcon =
+    icon "M9 15v-2l-1-1-1-.5V4h6v7.5l-1 .5-1 1v2l1.332.5v.5H7.196v-.5L9 15zm4-9.5h2.5V9L13 10M7 6.5h6"
+
+
+margaritaIcon : Element.Element Msg
+margaritaIcon =
+    icon "M9.25 16.5V9L7.8 8l-.3-1.5L5 5.25 4.5 3h11L15 5.25 12.5 6.5 12.2 8l-1.45 1v7.5h1.582v.5H7.196v-.5H9.25z"
+
+
+oldFashionedIcon : Element.Element Msg
+oldFashionedIcon =
+    icon "M14 5H6v10c.582.209 2.06.5 4 .5s3.612-.291 4-.5V5zm-8 5h8"
+
+
+steelCupIcon : Element.Element Msg
+steelCupIcon =
+    icon "M14.5 4h-9L7 14.5c.5.25.75.5 3 .5 1.75 0 2.75-.25 3-.5L14.5 4zM6 6h8"
+
+
+wineIcon : Element.Element Msg
+wineIcon =
+    icon "M9.25 16.5v-6L7.8 9 7 7l1-4h4l1 4-.8 2-1.45 1.5v6h1.582v.5H7.196v-.5H9.25z"
 
 
 type alias MaterialSet =
@@ -151,8 +215,8 @@ fuzzyIngredient ingredient =
                 { name = "Ginger beer"
                 , t = Spirit
                 }
+                -- Make sure this is below `ginger` or fix it.
 
-            -- Make sure this is below `ginger` or fix it.
             else if ingredient.material.name |> String.toLower |> String.contains "gin" then
                 { name = "Gin"
                 , t = Spirit
@@ -274,14 +338,21 @@ getNeighbors : Model -> Recipe -> List Recipe
 getNeighbors model recipe =
     List.filter
         (\r ->
+            let
+                rMaterials =
+                    getMaterials r
+
+                recipeMaterials =
+                    getMaterials recipe
+            in
             (r.name
                 /= recipe.name
             )
-                && (Set.Any.diff (getMaterials r) (getMaterials recipe)
+                && (Set.Any.diff rMaterials recipeMaterials
                         |> Set.Any.size
                    )
                 <= 1
-                && (Set.Any.diff (getMaterials recipe) (getMaterials r)
+                && (Set.Any.diff recipeMaterials rMaterials
                         |> Set.Any.size
                    )
                 <= 1
@@ -312,7 +383,7 @@ getNext recipes target =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( (case msg of
+    ( case msg of
         SelectRecipe recipe ->
             { model
                 | selectedRecipe =
@@ -353,6 +424,7 @@ update msg model =
                         _ ->
                             Alphabetical
             }
+                |> deriveMaterials
 
         MoveUp ->
             { model
@@ -385,17 +457,18 @@ update msg model =
                     else
                         Set.Any.remove ingredient model.availableMaterials
             }
+                |> deriveMaterials
 
         SetMode mode ->
             { model | mode = mode }
 
         SetSubsitute on ->
-            { model | pedantic = on } |> fuzzyIngredients on
+            { model | pedantic = on }
+                |> fuzzyIngredients on
+                |> deriveMaterials
 
         Ignored ->
             model
-      )
-        |> deriveMaterials
     , Cmd.none
     )
 
