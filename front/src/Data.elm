@@ -3,20 +3,19 @@ module Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recip
 import Quantity exposing (Quantity(..))
 
 
-type IngredientType
+type
+    IngredientType
     -- Main alcohol types:
     = Base -- Fermented base: Sparkling wine, beer, cider, etc.
     | Fortified -- Fermented base with extra alcohol: Port, sherry, vermouth, americano, etc.
     | Liqueur -- Spirit is infused / macerated with herb, spice, fruit; Amari, crème, etc.
     | Spirit -- Fermented base is distilled: Whiskey, rum, vodka, gin, tequila, brandy, etc.
-
-    -- Main non-alcoholic types:
+      -- Main non-alcoholic types:
     | Bitters -- Technically often high alcohol but used sparingly.
     | Fruit
     | Juice
     | Seasoning -- Salt, herbs, spices.
     | Syrup
-
     | Other
 
 
@@ -25,20 +24,20 @@ type Glass
       Collins
     | Highball
     | OldFashioned
-    -- | Shot
-    -- | Table
-    -- Stemware:
-    -- | Absinthe
-    -- | Chalice
-    -- | ChampagneCoupe
+      -- | Shot
+      -- | Table
+      -- Stemware:
+      -- | Absinthe
+      -- | Chalice
+      -- | ChampagneCoupe
     | ChampagneFlute
     | Cocktail
     | Hurricane
     | Margarita
-    -- | Sherry
-    -- | Snifter
+      -- | Sherry
+      -- | Snifter
     | Wine
-    -- Other:
+      -- Other:
     | CopperMug
     | IrishCoffeeMug
     | SteelCup
@@ -127,7 +126,10 @@ apricotBrandy =
     { name = "Apricot brandy", t = Liqueur }
 
 
+
 -- `port` is a reserved word.
+
+
 pport : Material
 pport =
     { name = "Port", t = Fortified }
@@ -755,6 +757,7 @@ recipes =
       , description = """Pour all ingredients into shaker with ice cubes. Shake well and strain into a chilled cocktail glass. Squeeze oil from lemon peel onto the drink."""
       , glass = Cocktail
       }
+
     -- https://iba-world.com/new-era-drinks/kamikaze-2/
     , { name = "Kamikaze"
       , ingredients =
@@ -766,6 +769,7 @@ recipes =
       , description = """Shake all ingredients together with ice. Strain into glass. Garnish with lime slice."""
       , glass = Cocktail
       }
+
     -- https://iba-world.com/new-era-drinks/lemon-drop-martini/
     , { name = "Lemon drop martini"
       , ingredients =
@@ -778,6 +782,7 @@ recipes =
       , description = """Shake and strain into a chilled cocktail glass rimmed with sugar, garnish with a slice of lemon."""
       , glass = Cocktail
       }
+
     -- https://iba-world.com/cocktails/vesper-2/
     , { name = "Vesper"
       , ingredients =
@@ -1015,6 +1020,7 @@ recipes =
       , description = """Shake well over ice cubes in a shaker, strain into a chilled cocktail glass."""
       , glass = Cocktail
       }
+
     -- https://iba-world.com/iba-official-cocktails/negroni/
     , { name = "Negroni"
       , ingredients =
@@ -1275,7 +1281,7 @@ recipes =
     , { name = "Kir"
       , ingredients =
             [ { material = dryWhiteWine, quantity = CL 9 }
-              , { material = cremeDeCassis, quantity = CL 1 }
+            , { material = cremeDeCassis, quantity = CL 1 }
             ]
       , description = """Pour Crème de Cassis into glass, top up with white wine."""
       , glass = Wine
@@ -1283,11 +1289,12 @@ recipes =
     , { name = "Kir royal"
       , ingredients =
             [ { material = champagne, quantity = CL 9 }
-              , { material = cremeDeCassis, quantity = CL 1 }
+            , { material = cremeDeCassis, quantity = CL 1 }
             ]
       , description = """Pour Crème de Cassis into glass, top up with Champagne."""
       , glass = Wine
       }
+
     -- https://iba-world.com/cocktails/long-island-iced-tea/
     , { name = "Long island iced tea"
       , ingredients =
@@ -1304,6 +1311,7 @@ recipes =
       , description = """Add all ingredients into highball glass filled with ice. Top with cola. Stir gently. Garnish with lemon slice."""
       , glass = Highball
       }
+
     -- https://en.wikipedia.org/wiki/Mai_Tai
     -- https://iba-world.com/cocktails/mai-tai/
     , { name = "Mai-tai"
@@ -1321,6 +1329,7 @@ recipes =
       , description = """Add all ingredients into a shaker with ice. Shake and pour into a double rocks glass or an highball glass. Garnish with pineapple spear, mint leaves, and lime peel."""
       , glass = Highball
       }
+
     -- https://iba-world.com/cocktails/margarita/
     , { name = "Margarita"
       , ingredients =
@@ -1332,6 +1341,7 @@ recipes =
       , description = """Add all ingredients into a shaker with ice. Shake and strain into a chilled cocktail glass. Garnish with a half salt rim (optional)."""
       , glass = Margarita
       }
+
     -- https://iba-world.com/new-era-drinks/tommys-margarita/
     , { name = "Tommy’s margarita"
       , ingredients =
@@ -1353,7 +1363,6 @@ recipes =
       , description = """Layer ingredients one at a time starting with coffee liqueur, followed by irish cream and top with triple sec. Flame the triple sec, serve while the flame is still on, accompanied with a straw on side plate."""
       , glass = OldFashioned
       }
-
 
     -- https://en.wikipedia.org/wiki/Barracuda_(cocktail)
     -- https://iba-world.com/new-era-drinks/barracuda/
@@ -1395,7 +1404,6 @@ recipes =
       , description = """Add all ingredients into cocktail shaker filled with ice. Shake well and strain into large cocktail glass. Garnish with lemon twist."""
       , glass = Cocktail
       }
-
 
     -- https://iba-world.com/new-era-drinks/dirty-martini/
     , { name = "Dirty martini"
@@ -1480,7 +1488,6 @@ recipes =
       , description = """Warm black coffee is poured into a pre-heated Irish coffee glass. Whiskey and at least one teaspoon of sugar is added and stirred until dissolved. Fresh thick chilled cream is carefully poured over the back of a spoon held just above the surface of the coffee. The layer of cream will float on the coffee without mixing. Plain sugar can be replaced with sugar syrup."""
       , glass = IrishCoffeeMug
       }
-
     , { name = "Tom collins"
       , ingredients =
             [ { material = oldTomGin, quantity = CL 4.5 }
@@ -1494,6 +1501,7 @@ recipes =
       , description = """Pour all ingredients directly into highball glass filled with ice. Stir gently. Garnish with lemon slice and maraschino cherry. Add a dash of Angostura bitters."""
       , glass = Collins
       }
+
     -- https://iba-world.com/cocktails/pina-colada/
     , { name = "Pina Colada"
       , ingredients =
@@ -1688,7 +1696,7 @@ recipes =
 
     -- https://en.wikipedia.org/wiki/Martinez_(cocktail)
     -- https://iba-world.com/iba-official-cocktails/martinez/
-    , { name = "Last word"
+    , { name = "Martinez"
       , ingredients =
             [ { material = londonDryGin, quantity = CL 4.5 }
             , { material = sweetRedVermouth, quantity = CL 4.5 }
