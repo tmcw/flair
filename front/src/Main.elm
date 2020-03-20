@@ -17,7 +17,7 @@ import Json.Decode as Decode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
 import Set.Any exposing (AnySet)
 import Svg exposing (path, svg)
-import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width, x1, x2, y1, y2)
+import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width)
 
 
 edges : { top : Int, right : Int, bottom : Int, left : Int }
@@ -521,7 +521,6 @@ update msg model =
         SetSubsitute on ->
             { model | pedantic = on }
                 |> fuzzyIngredients on
-                |> deriveMaterials
                 |> deriveMaterials
 
         Ignored ->
@@ -1061,11 +1060,8 @@ view model =
         , Font.size 13
         , Element.width Element.fill
         , Font.family
-            [ Font.external
-                { name = "IBM Plex Mono"
-                , url = "https://fonts.googleapis.com/css?family=IBM+Plex+Mono"
-                }
-            , Font.sansSerif
+            [ Font.typeface "IBM Plex Mono"
+            , Font.monospace
             ]
         ]
         (column [ Element.width Element.fill ]
