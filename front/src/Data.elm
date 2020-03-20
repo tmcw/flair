@@ -1707,4 +1707,19 @@ recipes =
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with Lemon zest."""
       , glass = Cocktail
       }
+
+    -- https://iba-world.com/iba-official-cocktails/vieux-carre/
+    , { name = "Vieux carré"
+      , ingredients =
+            [ { material = ryeWhiskey, quantity = CL 3 }
+            , { material = cognac, quantity = CL 3 }
+            , { material = sweetRedVermouth, quantity = CL 3 }
+            , { material = domBenedictine, quantity = Tsp 1 }
+            , { material = peychaudsBitters, quantity = Dash 2 }
+            , { material = orange, quantity = Custom "zest" }
+            , { material = cherry, quantity = Whole 1 }
+            ]
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with orange zest and maraschino cherry."""
+      , glass = Cocktail
+      }
     ]
