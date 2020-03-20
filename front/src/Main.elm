@@ -20,6 +20,15 @@ import Svg exposing (path, svg)
 import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width, x1, x2, y1, y2)
 
 
+edges : { top : Int, right : Int, bottom : Int, left : Int }
+edges =
+    { top = 0
+    , right = 0
+    , bottom = 0
+    , left = 0
+    }
+
+
 icon : String -> Element.Element Msg
 icon pathSpec =
     svg
@@ -108,12 +117,36 @@ type alias Model =
     , mode : Mode
     , pedantic : Bool
     , sort : Sort
+    , countedMaterials : List MaterialsGroup
     }
 
 
 materialKey : Material -> String
 materialKey ingredient =
     ingredient.name
+
+
+type alias CachedMaterial =
+    ( Int, Bool, Material )
+
+
+type alias MaterialsGroup =
+    { label : String
+    , materials : List CachedMaterial
+    }
+
+
+countMaterials : Model -> IngredientType -> List CachedMaterial
+countMaterials model t =
+    List.filter (\material -> material.t == t) model.materials
+        |> List.map
+            (\material ->
+                ( recipesWithIngredient recipes material
+                , Set.Any.member material model.availableMaterials
+                , material
+                )
+            )
+        |> List.sortBy (\( count, _, _ ) -> -count)
 
 
 deriveMaterials : Model -> Model
@@ -153,12 +186,35 @@ deriveMaterials model =
                 |> Set.Any.toList
         , recipes = orderedRecipes
     }
+        |> (\m ->
+                { m
+                    | countedMaterials =
+                        List.map
+                            (\( label, t ) ->
+                                { label = label
+                                , materials = countMaterials m t
+                                }
+                            )
+                            [ ( "SPIRITS", Spirit )
+                            , ( "LIQUEUR", Liqueur )
+                            , ( "FORTIFIED", Fortified )
+                            , ( "BASE", Base )
+                            , ( "BITTERS", Bitters )
+                            , ( "SYRUP", Syrup )
+                            , ( "JUICE", Juice )
+                            , ( "FRUIT", Fruit )
+                            , ( "SEASONING", Seasoning )
+                            , ( "OTHER", Other )
+                            ]
+                }
+           )
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { recipes = recipes
       , materials = []
+      , countedMaterials = []
       , selectedRecipe = Nothing
       , availableMaterials = Set.Any.empty materialKey -- Set.Any.fromList materialKey materials
       , units = Ml
@@ -466,6 +522,7 @@ update msg model =
             { model | pedantic = on }
                 |> fuzzyIngredients on
                 |> deriveMaterials
+                |> deriveMaterials
 
         Ignored ->
             model
@@ -523,34 +580,21 @@ checkboxIcon checked =
         Element.none
 
 
-ingredientNavigationItem : Model -> Material -> Element.Element Msg
-ingredientNavigationItem model ingredient =
-    let
-        checked =
-            Set.Any.member ingredient model.availableMaterials
-    in
+materialNavigationItem : CachedMaterial -> Element.Element Msg
+materialNavigationItem ( count, checked, material ) =
     Input.checkbox []
-        { onChange = \_ -> ToggleIngredient ingredient (not checked)
+        { onChange = \_ -> ToggleIngredient material (not checked)
         , icon = checkboxIcon
         , checked = checked
         , label =
             Input.labelRight []
                 (text
-                    (String.fromInt (recipesWithIngredient model.recipes ingredient)
+                    (String.fromInt count
                         ++ " "
-                        ++ ingredient.name
+                        ++ material.name
                     )
                 )
         }
-
-
-edges : { top : Int, right : Int, bottom : Int, left : Int }
-edges =
-    { top = 0
-    , right = 0
-    , bottom = 0
-    , left = 0
-    }
 
 
 title : String -> Element.Element Msg
@@ -562,45 +606,15 @@ title name =
         (text name)
 
 
-typeMenu : Model -> IngredientType -> List (Element.Element Msg)
-typeMenu model t =
-    List.filter (\material -> material.t == t) model.materials
-        |> List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient))
-        |> List.map (ingredientNavigationItem model)
-
-
-listIngredients : Model -> Element.Element Msg
-listIngredients model =
+listMaterials : List MaterialsGroup -> Element.Element Msg
+listMaterials countedMaterials =
     column [ spacing 8, alignTop, Element.width Element.shrink ]
-        (title "SPIRITS"
-            :: typeMenu model Spirit
-            ++ (title "LIQUEUR"
-                    :: typeMenu model Liqueur
-               )
-            ++ (title "FORTIFIED"
-                    :: typeMenu model Fortified
-               )
-            ++ (title "BASE"
-                    :: typeMenu model Base
-               )
-            ++ (title "BITTERS"
-                    :: typeMenu model Bitters
-               )
-            ++ (title "SYRUP"
-                    :: typeMenu model Syrup
-               )
-            ++ (title "JUICE"
-                    :: typeMenu model Juice
-               )
-            ++ (title "FRUIT"
-                    :: typeMenu model Fruit
-               )
-            ++ (title "SEASONING"
-                    :: typeMenu model Seasoning
-               )
-            ++ (title "OTHER"
-                    :: typeMenu model Other
-               )
+        (List.concatMap
+            (\{ label, materials } ->
+                title label
+                    :: List.map materialNavigationItem materials
+            )
+            countedMaterials
         )
 
 
@@ -1069,7 +1083,7 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listIngredients model
+                        [ listMaterials model.countedMaterials
                         ]
                     , column
                         [ alignTop
