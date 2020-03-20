@@ -891,7 +891,7 @@ header model =
             , checked = model.pedantic
             , label =
                 Input.labelRight []
-                    (text "I’m pedantic")
+                    (text "Pedantic")
             }
         , el []
             (Element.link
