@@ -368,104 +368,119 @@ deriveMaterials model =
            )
 
 
+fuzzRecipe : Recipe -> Recipe
+fuzzRecipe recipe =
+    { recipe
+        | ingredients =
+            List.map
+                fuzzyIngredient
+                recipe.ingredients
+    }
+
+
 fuzzyIngredients : Bool -> Model -> Model
 fuzzyIngredients pedantic model =
-    { model
-        | recipes =
-            if not pedantic then
+    if not pedantic then
+        { model
+            | recipes =
                 List.map
-                    (\recipe ->
-                        { recipe
-                            | ingredients =
-                                List.map
-                                    fuzzyIngredient
-                                    recipe.ingredients
-                        }
-                    )
+                    fuzzRecipe
                     recipes
+        }
 
-            else
-                recipes
-    }
+    else
+        model
+
+
+fuzzyCategories : List ( String, Material )
+fuzzyCategories =
+    [ ( "whiskey"
+      , { name = "Whiskey"
+        , t = Spirit
+        }
+      )
+    , ( "rum"
+      , { name = "Rum"
+        , t = Spirit
+        }
+      )
+    , ( "cachaça"
+      , { name = "Rum"
+        , t = Spirit
+        }
+      )
+    , ( "ginger"
+      , { name = "Ginger beer"
+        , t = Spirit
+        }
+      )
+
+    -- Make sure this is below `ginger` or fix it.
+    , ( "gin"
+      , { name = "Gin"
+        , t = Spirit
+        }
+      )
+    , ( "cognac"
+      , { name = "Brandy"
+        , t = Spirit
+        }
+      )
+    , ( "crème de menthe"
+      , { name = "Crème de menthe"
+        , t = Liqueur
+        }
+      )
+    , ( "crème de cacao"
+      , { name = "Crème de cacao"
+        , t = Liqueur
+        }
+      )
+    , ( "prosecco"
+      , { name = "Sparkling wine"
+        , t = Base
+        }
+      )
+    , ( "champagne"
+      , { name = "Sparkling wine"
+        , t = Base
+        }
+      )
+    , ( "gomme"
+      , { name = "Simple syrup"
+        , t = Syrup
+        }
+      )
+    , ( "sugar"
+      , { name = "Sugar"
+        , t = Seasoning
+        }
+      )
+    , ( "salt"
+      , { name = "Salt"
+        , t = Seasoning
+        }
+      )
+    , ( "espresso"
+      , { name = "Coffee"
+        , t = Other
+        }
+      )
+    ]
 
 
 fuzzyIngredient : Ingredient -> Ingredient
 fuzzyIngredient ingredient =
     { ingredient
         | material =
-            if ingredient.material.name |> String.toLower |> String.contains "whiskey" then
-                { name = "Whiskey"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "rum" then
-                { name = "Rum"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "cachaça" then
-                { name = "Rum"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "ginger" then
-                { name = "Ginger beer"
-                , t = Spirit
-                }
-                -- Make sure this is below `ginger` or fix it.
-
-            else if ingredient.material.name |> String.toLower |> String.contains "gin" then
-                { name = "Gin"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "cognac" then
-                { name = "Brandy"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "crème de menthe" then
-                { name = "Crème de menthe"
-                , t = Liqueur
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "crème de cacao" then
-                { name = "Crème de cacao"
-                , t = Liqueur
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "prosecco" then
-                { name = "Sparkling wine"
-                , t = Base
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "champagne" then
-                { name = "Sparkling wine"
-                , t = Base
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "gomme" then
-                { name = "Simple syrup"
-                , t = Syrup
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "sugar" then
-                { name = "Sugar"
-                , t = Seasoning
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "salt" then
-                { name = "Salt"
-                , t = Seasoning
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "espresso" then
-                { name = "Coffee"
-                , t = Other
-                }
-
-            else
-                ingredient.material
+            fuzzyCategories
+                |> List.filter
+                    (\( fuzzString, _ ) ->
+                        ingredient.material.name |> String.toLower |> String.contains fuzzString
+                    )
+                |> List.head
+                |> Maybe.map (\( _, mat ) -> mat)
+                |> Maybe.withDefault ingredient.material
     }
 
 
