@@ -1,4 +1,4 @@
-module Main exposing (Msg(..), main, update, view)
+port module Main exposing (Msg(..), main, setDark, update, view)
 
 import Browser
 import Browser.Events
@@ -57,6 +57,7 @@ type alias Model =
     , mode : Mode
     , pedantic : Bool
     , sort : Sort
+    , dark : Bool
     , countedMaterials : List MaterialsGroup
     }
 
@@ -67,6 +68,7 @@ type Msg
     | SetUnits String
     | SetMode Mode
     | SetSubsitute Bool
+    | SetDark Bool
     | SetSort String
     | MoveUp
     | MoveDown
@@ -137,9 +139,9 @@ background =
     Element.rgb255 249 247 244
 
 
-selectedColor : Element.Color
-selectedColor =
-    Element.rgb255 229 227 224
+white : Element.Color
+white =
+    Element.rgb 229 227 224
 
 
 black : Element.Color
@@ -150,6 +152,16 @@ black =
 blue : Element.Color
 blue =
     Element.rgb255 29 27 124
+
+
+lightBlue : Element.Color
+lightBlue =
+    Element.rgb255 129 127 224
+
+
+clear : Element.Color
+clear =
+    Element.rgba255 0 0 0 0
 
 
 edges : { top : Int, right : Int, bottom : Int, left : Int }
@@ -167,19 +179,21 @@ edges =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( case msg of
+    case msg of
         SelectRecipe recipe ->
-            { model
+            ( { model
                 | selectedRecipe =
                     if Just recipe == model.selectedRecipe then
                         Nothing
 
                     else
                         Just recipe
-            }
+              }
+            , Cmd.none
+            )
 
         SetUnits units ->
-            { model
+            ( { model
                 | units =
                     case units of
                         "Cl" ->
@@ -193,10 +207,12 @@ update msg model =
 
                         _ ->
                             Cl
-            }
+              }
+            , Cmd.none
+            )
 
         SetSort sort ->
-            { model
+            ( { model
                 | sort =
                     case sort of
                         "Alphabetical" ->
@@ -207,11 +223,13 @@ update msg model =
 
                         _ ->
                             Alphabetical
-            }
+              }
                 |> deriveMaterials
+            , Cmd.none
+            )
 
         MoveUp ->
-            { model
+            ( { model
                 | selectedRecipe =
                     case model.selectedRecipe of
                         Just r ->
@@ -219,10 +237,12 @@ update msg model =
 
                         Nothing ->
                             List.head model.recipes
-            }
+              }
+            , Cmd.none
+            )
 
         MoveDown ->
-            { model
+            ( { model
                 | selectedRecipe =
                     case model.selectedRecipe of
                         Just r ->
@@ -230,30 +250,37 @@ update msg model =
 
                         Nothing ->
                             List.head model.recipes
-            }
+              }
+            , Cmd.none
+            )
 
         ToggleIngredient ingredient checked ->
-            { model
+            ( { model
                 | availableMaterials =
                     if checked then
                         Set.Any.insert ingredient model.availableMaterials
 
                     else
                         Set.Any.remove ingredient model.availableMaterials
-            }
+              }
                 |> deriveMaterials
+            , Cmd.none
+            )
 
         SetMode mode ->
-            { model | mode = mode }
+            ( { model | mode = mode }, Cmd.none )
 
         SetSubsitute on ->
-            { model | pedantic = on }
+            ( { model | pedantic = on }
                 |> deriveMaterials
+            , Cmd.none
+            )
+
+        SetDark on ->
+            ( { model | dark = on }, setDark on )
 
         Ignored ->
-            model
-    , Cmd.none
-    )
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -272,10 +299,14 @@ init =
       , mode = Normal
       , pedantic = True
       , sort = Feasibility
+      , dark = False
       }
         |> deriveMaterials
     , Cmd.none
     )
+
+
+port setDark : Bool -> Cmd msg
 
 
 main : Program () Model Msg
@@ -468,8 +499,8 @@ getNext recipes target =
 -- User interface
 
 
-checkboxIcon : Bool -> Element msg
-checkboxIcon checked =
+checkboxIcon : Bool -> Bool -> Element msg
+checkboxIcon dark checked =
     el
         [ Element.width
             (Element.px
@@ -486,23 +517,33 @@ checkboxIcon checked =
             )
         , Element.centerY
         , Border.rounded 5
-        , Border.color black
+        , Border.color
+            (if dark then
+                white
+
+             else
+                black
+            )
         , Element.Background.color <|
             if checked then
-                black
+                if dark then
+                    white
+
+                else
+                    black
 
             else
-                background
+                clear
         , Border.width 1
         ]
         Element.none
 
 
-materialNavigationItem : CachedMaterial -> Element.Element Msg
-materialNavigationItem ( count, checked, material ) =
+materialNavigationItem : Bool -> CachedMaterial -> Element.Element Msg
+materialNavigationItem dark ( count, checked, material ) =
     Input.checkbox []
         { onChange = \_ -> ToggleIngredient material (not checked)
-        , icon = checkboxIcon
+        , icon = checkboxIcon dark
         , checked = checked
         , label =
             Input.labelRight []
@@ -524,13 +565,13 @@ title name =
         (text name)
 
 
-listMaterials : Bool -> List MaterialsGroup -> Element.Element Msg
-listMaterials pedantic countedMaterials =
+listMaterials : Bool -> Bool -> List MaterialsGroup -> Element.Element Msg
+listMaterials dark pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
                 title label
-                    :: List.map materialNavigationItem
+                    :: List.map (materialNavigationItem dark)
                         (if pedantic then
                             List.filter
                                 (\( count, _, _ ) -> count > 0)
@@ -630,28 +671,47 @@ recipeBlock model recipe =
             model.selectedRecipe == Just recipe
     in
     column
-        [ spacing 10
-        , Element.pointer
-        , padding 10
-        , Element.Background.color
-            (if selected then
-                selectedColor
-
-             else
-                background
-            )
-        , Element.alpha
+        ([ spacing 10
+         , Element.pointer
+         , Element.alpha
             (if viable then
                 1
 
              else
                 0.5
             )
-        , Element.width Element.fill
-        , Element.height Element.fill
-        , alignTop
-        , onClick (SelectRecipe recipe)
-        ]
+         , Element.width Element.fill
+         , Element.height Element.fill
+         , alignTop
+         , onClick (SelectRecipe recipe)
+         ]
+            ++ (if selected then
+                    if model.dark then
+                        [ Border.color
+                            (Element.rgb255
+                                239
+                                237
+                                234
+                            )
+                        , Border.width 1
+                        , padding 9
+                        ]
+
+                    else
+                        [ Element.Background.color
+                            (Element.rgb255
+                                229
+                                227
+                                224
+                            )
+                        , padding 10
+                        ]
+
+                else
+                    [ padding 10
+                    ]
+               )
+        )
         [ row []
             [ drinkIcon recipe
             , el [ Font.italic, Font.underline ] (text recipe.name)
@@ -783,9 +843,31 @@ header model =
                 Input.labelRight []
                     (text "Pedantic")
             }
+        , Input.checkbox
+            [ paddingEach
+                { left = 20
+                , top = 0
+                , bottom = 0
+                , right = 5
+                }
+            ]
+            { onChange = SetDark
+            , icon = Input.defaultCheckbox
+            , checked = model.dark
+            , label =
+                Input.labelRight []
+                    (text "Dark")
+            }
         , el []
             (Element.link
-                [ Font.color blue ]
+                [ Font.color
+                    (if model.dark then
+                        lightBlue
+
+                     else
+                        blue
+                    )
+                ]
                 { url = "https://github.com/tmcw/flair", label = text "{source code}" }
             )
         , el
@@ -872,7 +954,7 @@ renderDot material row =
                     black
 
                 else
-                    background
+                    clear
             , Border.width 1
             ]
             Element.none
@@ -943,10 +1025,16 @@ gridView model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Element.Background.color background
-        , padding 20
+        [ padding 20
         , Font.size 13
         , Element.width Element.fill
+        , Font.color
+            (if model.dark then
+                white
+
+             else
+                black
+            )
         , Font.family
             [ Font.typeface "IBM Plex Mono"
             , Font.monospace
@@ -967,7 +1055,7 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listMaterials model.pedantic model.countedMaterials
+                        [ listMaterials model.dark model.pedantic model.countedMaterials
                         ]
                     , column
                         [ alignTop
