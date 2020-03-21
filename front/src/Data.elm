@@ -174,24 +174,34 @@ calvados =
     material "Calvados" Spirit
 
 
+bitters : Material
+bitters =
+    material "Bitters" Bitters
+
+
 peachBitters : Material
 peachBitters =
-    material "Peach bitters" Bitters
+    material3 "Peach bitters" Bitters bitters
 
 
 orangeBitters : Material
 orangeBitters =
-    material "Orange bitters" Bitters
+    material3 "Orange bitters" Bitters bitters
 
 
 angosturaBitters : Material
 angosturaBitters =
-    material "Angostura bitters" Bitters
+    material3 "Angostura bitters" Bitters bitters
 
 
 peychaudsBitters : Material
 peychaudsBitters =
-    material "Peychaud’s bitters" Bitters
+    material3 "Peychaud’s bitters" Bitters bitters
+
+
+aromaticBitters : Material
+aromaticBitters =
+    material3 "Aromatic bitters" Bitters bitters
 
 
 lemon : Material
@@ -597,11 +607,6 @@ tabasco =
 celery : Material
 celery =
     material "Celery" Other
-
-
-aromaticBitters : Material
-aromaticBitters =
-    material "Aromatic bitters" Bitters
 
 
 greenChartreuse : Material
