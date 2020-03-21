@@ -134,11 +134,6 @@ drinkIcon recipe =
 -- Constants
 
 
-background : Element.Color
-background =
-    Element.rgb255 249 247 244
-
-
 white : Element.Color
 white =
     Element.rgb 229 227 224
