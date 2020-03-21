@@ -1,0 +1,30 @@
+name: Elm
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: install elm
+      run: |
+        npm install -g elm elm-analyse
+    - name: install dependencies
+      working-directory: ./front
+      run: |
+        elm make src/Main.elm
+    - name: 
+      working-directory: ./front
+      run: |
+        elm-analyse
