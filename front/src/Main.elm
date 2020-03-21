@@ -441,7 +441,7 @@ getNeighbors model recipe =
                 , r
                 )
             )
-        |> List.filter (\( add, remove, _ ) -> List.length add + List.length remove < round ((List.length recipe.ingredients |> toFloat) * 0.75))
+        |> List.filter (\( add, remove, _ ) -> List.length add + List.length remove < 4)
         |> List.sortBy (\( add, remove, _ ) -> List.length add + List.length remove)
 
 
