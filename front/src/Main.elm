@@ -2,7 +2,7 @@ module Main exposing (Msg(..), main, update, view)
 
 import Browser
 import Browser.Events
-import Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
+import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
 import Element exposing (Element, alignTop, centerX, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -248,7 +248,6 @@ update msg model =
 
         SetSubsitute on ->
             { model | pedantic = on }
-                |> fuzzyIngredients on
                 |> deriveMaterials
 
         Ignored ->
@@ -294,12 +293,12 @@ materialKey ingredient =
     ingredient.name
 
 
-countMaterials : Model -> IngredientType -> List CachedMaterial
+countMaterials : Model -> MaterialType -> List CachedMaterial
 countMaterials model t =
     List.filter (\material -> material.t == t) model.materials
         |> List.map
             (\material ->
-                ( recipesWithIngredient recipes material
+                ( recipesWithIngredient model.pedantic recipes material
                 , Set.Any.member material model.availableMaterials
                 , material
                 )
@@ -312,13 +311,13 @@ deriveMaterials model =
     let
         ( sufficient, unsortedInsufficient ) =
             List.partition
-                (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty)
+                (\recipe -> missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.isEmpty)
                 model.recipes
 
         insufficient =
             List.sortBy
                 (\recipe ->
-                    (missingIngredients model.availableMaterials recipe |> Set.Any.size |> toFloat)
+                    (missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.size |> toFloat)
                         / (List.length recipe.ingredients
                             |> toFloat
                           )
@@ -338,7 +337,17 @@ deriveMaterials model =
     in
     { model
         | materials =
-            List.concatMap (\recipe -> List.map (\ingredient -> ingredient.material) recipe.ingredients) model.recipes
+            List.concatMap
+                (\recipe ->
+                    List.concatMap
+                        (\ingredient ->
+                            [ aliasIngredient False ingredient
+                            , ingredient.material
+                            ]
+                        )
+                        recipe.ingredients
+                )
+                model.recipes
                 |> List.foldl (::) []
                 |> Set.Any.fromList materialKey
                 |> Set.Any.toList
@@ -368,107 +377,6 @@ deriveMaterials model =
            )
 
 
-fuzzyIngredients : Bool -> Model -> Model
-fuzzyIngredients pedantic model =
-    { model
-        | recipes =
-            if not pedantic then
-                List.map
-                    (\recipe ->
-                        { recipe
-                            | ingredients =
-                                List.map
-                                    fuzzyIngredient
-                                    recipe.ingredients
-                        }
-                    )
-                    recipes
-
-            else
-                recipes
-    }
-
-
-fuzzyIngredient : Ingredient -> Ingredient
-fuzzyIngredient ingredient =
-    { ingredient
-        | material =
-            if ingredient.material.name |> String.toLower |> String.contains "whiskey" then
-                { name = "Whiskey"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "rum" then
-                { name = "Rum"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "cachaça" then
-                { name = "Rum"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "ginger" then
-                { name = "Ginger beer"
-                , t = Spirit
-                }
-                -- Make sure this is below `ginger` or fix it.
-
-            else if ingredient.material.name |> String.toLower |> String.contains "gin" then
-                { name = "Gin"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "cognac" then
-                { name = "Brandy"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "crème de menthe" then
-                { name = "Crème de menthe"
-                , t = Liqueur
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "crème de cacao" then
-                { name = "Crème de cacao"
-                , t = Liqueur
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "prosecco" then
-                { name = "Sparkling wine"
-                , t = Base
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "champagne" then
-                { name = "Sparkling wine"
-                , t = Base
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "gomme" then
-                { name = "Simple syrup"
-                , t = Syrup
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "sugar" then
-                { name = "Sugar"
-                , t = Seasoning
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "salt" then
-                { name = "Salt"
-                , t = Seasoning
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "espresso" then
-                { name = "Coffee"
-                , t = Other
-                }
-
-            else
-                ingredient.material
-    }
-
-
 keyDecoder : Decode.Decoder Msg
 keyDecoder =
     Decode.map toDirection (Decode.field "key" Decode.string)
@@ -487,47 +395,59 @@ toDirection string =
             Ignored
 
 
-getMaterials : Recipe -> MaterialSet
-getMaterials recipe =
-    List.map (\ingredient -> ingredient.material) recipe.ingredients
+aliasIngredient : Bool -> Ingredient -> Material
+aliasIngredient pedantic ingredient =
+    if pedantic then
+        ingredient.material
+
+    else
+        case ingredient.material.super of
+            SuperMaterial Nothing ->
+                ingredient.material
+
+            SuperMaterial (Just m) ->
+                m
+
+
+getMaterials : Bool -> Recipe -> MaterialSet
+getMaterials pedantic recipe =
+    List.map
+        (aliasIngredient pedantic)
+        recipe.ingredients
         |> Set.Any.fromList
             materialKey
 
 
-missingIngredients : MaterialSet -> Recipe -> MaterialSet
-missingIngredients availableMaterials recipe =
-    Set.Any.diff (getMaterials recipe) availableMaterials
+missingIngredients : Bool -> MaterialSet -> Recipe -> MaterialSet
+missingIngredients pedantic availableMaterials recipe =
+    Set.Any.diff (getMaterials pedantic recipe) availableMaterials
 
 
-getNeighbors : Model -> Recipe -> List Recipe
+getNeighbors : Model -> Recipe -> List ( List Material, List Material, Recipe )
 getNeighbors model recipe =
-    List.filter
-        (\r ->
-            let
-                rMaterials =
-                    getMaterials r
+    model.recipes
+        |> List.filter (\r -> r.name /= recipe.name)
+        |> List.map
+            (\r ->
+                let
+                    rMaterials =
+                        getMaterials model.pedantic r
 
-                recipeMaterials =
-                    getMaterials recipe
-            in
-            (r.name
-                /= recipe.name
+                    recipeMaterials =
+                        getMaterials model.pedantic recipe
+                in
+                ( Set.Any.diff rMaterials recipeMaterials |> Set.Any.toList
+                , Set.Any.diff recipeMaterials rMaterials |> Set.Any.toList
+                , r
+                )
             )
-                && (Set.Any.diff rMaterials recipeMaterials
-                        |> Set.Any.size
-                   )
-                <= 1
-                && (Set.Any.diff recipeMaterials rMaterials
-                        |> Set.Any.size
-                   )
-                <= 1
-        )
-        model.recipes
+        |> List.filter (\( add, remove, _ ) -> List.length add + List.length remove < round ((List.length recipe.ingredients |> toFloat) * 0.75))
+        |> List.sortBy (\( add, remove, _ ) -> List.length add + List.length remove)
 
 
-recipesWithIngredient : List Recipe -> Material -> Int
-recipesWithIngredient allRecipes ingredient =
-    List.filter (\recipe -> Set.Any.member ingredient (getMaterials recipe)) allRecipes
+recipesWithIngredient : Bool -> List Recipe -> Material -> Int
+recipesWithIngredient pedantic allRecipes ingredient =
+    List.filter (\recipe -> Set.Any.member ingredient (getMaterials pedantic recipe)) allRecipes
         |> List.length
 
 
@@ -604,13 +524,23 @@ title name =
         (text name)
 
 
-listMaterials : List MaterialsGroup -> Element.Element Msg
-listMaterials countedMaterials =
+listMaterials : Bool -> List MaterialsGroup -> Element.Element Msg
+listMaterials pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
                 title label
-                    :: List.map materialNavigationItem materials
+                    :: List.map materialNavigationItem
+                        (if pedantic then
+                            List.filter
+                                (\( count, _, _ ) -> count > 0)
+                                materials
+
+                         else
+                            List.filter
+                                (\( count, _, material ) -> count > 0 && material.super == SuperMaterial Nothing)
+                                materials
+                        )
             )
         |> column [ spacing 8, alignTop, Element.width Element.shrink ]
 
@@ -658,19 +588,18 @@ glassName glass =
             "Zombie glass"
 
 
-neighborBlock : Recipe -> Recipe -> Element.Element Msg
-neighborBlock recipe neighbor =
-    let
-        add =
-            Set.Any.diff (getMaterials neighbor) (getMaterials recipe)
-                |> Set.Any.toList
-                |> List.head
+capitalize : String -> String
+capitalize str =
+    case String.toList str of
+        x :: xs ->
+            String.fromChar (Char.toUpper x) ++ String.fromList xs
 
-        remove =
-            Set.Any.diff (getMaterials recipe) (getMaterials neighbor)
-                |> Set.Any.toList
-                |> List.head
-    in
+        [] ->
+            ""
+
+
+neighborBlock : ( List Material, List Material, Recipe ) -> Element.Element Msg
+neighborBlock ( add, remove, neighbor ) =
     column
         [ spacing 10
         , Element.pointer
@@ -681,18 +610,12 @@ neighborBlock recipe neighbor =
         ]
         [ el [ Font.italic, Font.underline ] (text neighbor.name)
         , paragraph []
-            [ case ( add, remove ) of
-                ( Just a, Just b ) ->
-                    el [] (text ("Add " ++ a.name ++ ", remove " ++ b.name))
-
-                ( Just a, Nothing ) ->
-                    el [] (text ("Add " ++ a.name))
-
-                ( Nothing, Just b ) ->
-                    el [] (text ("Remove " ++ b.name))
-
-                ( Nothing, Nothing ) ->
-                    el [] (text "")
+            [ List.map (\a -> "add " ++ a.name) add
+                ++ List.map (\a -> "remove " ++ a.name) remove
+                |> String.join ", "
+                |> capitalize
+                |> text
+                |> el []
             ]
         ]
 
@@ -701,7 +624,7 @@ recipeBlock : Model -> Recipe -> Element.Element Msg
 recipeBlock model recipe =
     let
         viable =
-            missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty
+            missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.isEmpty
 
         selected =
             model.selectedRecipe == Just recipe
@@ -735,20 +658,26 @@ recipeBlock model recipe =
             ]
         , recipe.ingredients
             |> List.map
-                (\ingredient ->
-                    el
-                        (if Set.Any.member ingredient.material model.availableMaterials then
-                            []
-
-                         else
-                            [ strike ]
-                        )
-                        (text ingredient.material.name)
-                )
+                (listIngredientInBlock model)
             |> List.intersperse
                 (el [] (text ", "))
             |> paragraph [ paddingEach { edges | left = 5 } ]
         ]
+
+
+listIngredientInBlock : Model -> Ingredient -> Element.Element Msg
+listIngredientInBlock model ingredient =
+    el
+        (if
+            Set.Any.member (aliasIngredient model.pedantic ingredient)
+                model.availableMaterials
+         then
+            []
+
+         else
+            [ strike ]
+        )
+        (text ingredient.material.name)
 
 
 noneSelected : Element.Element Msg
@@ -789,6 +718,7 @@ displayRecipe model recipe =
                                 ++ printQuantity model.units ingredient.quantity
                                 ++ " "
                                 ++ ingredient.material.name
+                                ++ replacement model.pedantic ingredient
                             )
                         ]
                 )
@@ -801,9 +731,18 @@ displayRecipe model recipe =
 
                 else
                     title "NEIGHBORS"
-                        :: List.map (neighborBlock recipe) neighbors
+                        :: List.map neighborBlock neighbors
                )
         )
+
+
+replacement : Bool -> Ingredient -> String
+replacement pedantic ingredient =
+    if pedantic == False && ingredient.material.super /= SuperMaterial Nothing then
+        " (or " ++ (aliasIngredient pedantic ingredient).name ++ ")"
+
+    else
+        ""
 
 
 listRecipes : Model -> Element.Element Msg
@@ -971,12 +910,12 @@ gridView : Model -> Element.Element Msg
 gridView model =
     let
         mod =
-            fuzzyIngredients True model
+            model
 
         sortedMaterials =
             mod.materials
                 |> List.filter (\ingredient -> ingredient.t == Spirit || ingredient.t == Liqueur || ingredient.t == Fortified || ingredient.t == Base)
-                |> List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient))
+                |> List.sortBy (\ingredient -> -(recipesWithIngredient False model.recipes ingredient))
     in
     el
         [ paddingEach
@@ -1028,7 +967,7 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listMaterials model.countedMaterials
+                        [ listMaterials model.pedantic model.countedMaterials
                         ]
                     , column
                         [ alignTop
