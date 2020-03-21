@@ -423,30 +423,26 @@ missingIngredients pedantic availableMaterials recipe =
     Set.Any.diff (getMaterials pedantic recipe) availableMaterials
 
 
-getNeighbors : Model -> Recipe -> List Recipe
+getNeighbors : Model -> Recipe -> List ( List Material, List Material, Recipe )
 getNeighbors model recipe =
-    List.filter
-        (\r ->
-            let
-                rMaterials =
-                    getMaterials model.pedantic r
+    model.recipes
+        |> List.filter (\r -> r.name /= recipe.name)
+        |> List.map
+            (\r ->
+                let
+                    rMaterials =
+                        getMaterials model.pedantic r
 
-                recipeMaterials =
-                    getMaterials model.pedantic recipe
-            in
-            (r.name
-                /= recipe.name
+                    recipeMaterials =
+                        getMaterials model.pedantic recipe
+                in
+                ( Set.Any.diff rMaterials recipeMaterials |> Set.Any.toList
+                , Set.Any.diff recipeMaterials rMaterials |> Set.Any.toList
+                , r
+                )
             )
-                && (Set.Any.diff rMaterials recipeMaterials
-                        |> Set.Any.size
-                   )
-                <= 1
-                && (Set.Any.diff recipeMaterials rMaterials
-                        |> Set.Any.size
-                   )
-                <= 1
-        )
-        model.recipes
+        |> List.filter (\( add, remove, _ ) -> List.length add + List.length remove < round ((List.length recipe.ingredients |> toFloat) * 0.75))
+        |> List.sortBy (\( add, remove, _ ) -> List.length add + List.length remove)
 
 
 recipesWithIngredient : Bool -> List Recipe -> Material -> Int
@@ -537,7 +533,7 @@ listMaterials pedantic countedMaterials =
                     :: List.map materialNavigationItem
                         (if pedantic then
                             List.filter
-                                (\( count, _, material ) -> count > 0)
+                                (\( count, _, _ ) -> count > 0)
                                 materials
 
                          else
@@ -592,25 +588,18 @@ glassName glass =
             "Zombie glass"
 
 
-neighborBlock : Bool -> Recipe -> Recipe -> Element.Element Msg
-neighborBlock pedantic recipe neighbor =
-    let
-        neighborMaterials =
-            getMaterials pedantic neighbor
+capitalize : String -> String
+capitalize str =
+    case String.toList str of
+        x :: xs ->
+            String.fromChar (Char.toUpper x) ++ String.fromList xs
 
-        recipeMaterials =
-            getMaterials pedantic recipe
+        [] ->
+            ""
 
-        add =
-            Set.Any.diff neighborMaterials recipeMaterials
-                |> Set.Any.toList
-                |> List.head
 
-        remove =
-            Set.Any.diff recipeMaterials neighborMaterials
-                |> Set.Any.toList
-                |> List.head
-    in
+neighborBlock : ( List Material, List Material, Recipe ) -> Element.Element Msg
+neighborBlock ( add, remove, neighbor ) =
     column
         [ spacing 10
         , Element.pointer
@@ -621,18 +610,12 @@ neighborBlock pedantic recipe neighbor =
         ]
         [ el [ Font.italic, Font.underline ] (text neighbor.name)
         , paragraph []
-            [ case ( add, remove ) of
-                ( Just a, Just b ) ->
-                    el [] (text ("Add " ++ a.name ++ ", remove " ++ b.name))
-
-                ( Just a, Nothing ) ->
-                    el [] (text ("Add " ++ a.name))
-
-                ( Nothing, Just b ) ->
-                    el [] (text ("Remove " ++ b.name))
-
-                ( Nothing, Nothing ) ->
-                    el [] (text "")
+            [ List.map (\a -> "add " ++ a.name) add
+                ++ List.map (\a -> "remove " ++ a.name) remove
+                |> String.join ", "
+                |> capitalize
+                |> text
+                |> el []
             ]
         ]
 
@@ -735,6 +718,7 @@ displayRecipe model recipe =
                                 ++ printQuantity model.units ingredient.quantity
                                 ++ " "
                                 ++ ingredient.material.name
+                                ++ replacement model.pedantic ingredient
                             )
                         ]
                 )
@@ -747,9 +731,18 @@ displayRecipe model recipe =
 
                 else
                     title "NEIGHBORS"
-                        :: List.map (neighborBlock model.pedantic recipe) neighbors
+                        :: List.map neighborBlock neighbors
                )
         )
+
+
+replacement : Bool -> Ingredient -> String
+replacement pedantic ingredient =
+    if pedantic == False && ingredient.material.super /= SuperMaterial Nothing then
+        " (or " ++ (aliasIngredient pedantic ingredient).name ++ ")"
+
+    else
+        ""
 
 
 listRecipes : Model -> Element.Element Msg

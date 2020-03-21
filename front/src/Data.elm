@@ -266,12 +266,7 @@ lime =
 
 cachaca : Material
 cachaca =
-    material "Cachaça" Spirit
-
-
-sugar : Material
-sugar =
-    material "Sugar" Seasoning
+    material3 "Cachaça" Spirit rum
 
 
 absinthe : Material
@@ -287,11 +282,6 @@ campari =
 fernetBranca : Material
 fernetBranca =
     material "Fernet Branca" Liqueur
-
-
-simpleSyrup : Material
-simpleSyrup =
-    material "Simple syrup" Syrup
 
 
 gommeSyrup : Material
@@ -469,14 +459,19 @@ olive =
     material "Olive" Other
 
 
+wine : Material
+wine =
+    material "Wine" Base
+
+
 dryWhiteWine : Material
 dryWhiteWine =
-    material "Dry white wine" Base
+    material3 "Dry white wine" Base wine
 
 
 sparklingWine : Material
 sparklingWine =
-    material "Sparkling wine" Base
+    material3 "Sparkling wine" Base wine
 
 
 peachSchnapps : Material
@@ -529,14 +524,24 @@ celerySalt =
     material "Celery salt" Seasoning
 
 
+sugar : Material
+sugar =
+    material "Sugar" Seasoning
+
+
+simpleSyrup : Material
+simpleSyrup =
+    material3 "Simple syrup" Syrup sugar
+
+
 caneSugar : Material
 caneSugar =
-    material "Cane sugar" Seasoning
+    material3 "Cane sugar" Seasoning sugar
 
 
 powderedSugar : Material
 powderedSugar =
-    material "Powdered sugar" Seasoning
+    material3 "Powdered sugar" Seasoning sugar
 
 
 aperol : Material
