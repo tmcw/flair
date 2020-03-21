@@ -1839,19 +1839,6 @@ recipes =
       , glass = OldFashioned
       }
 
-    -- https://iba-world.com/news/cachanchara/
-    , { name = "Cachanchara"
-      , ingredients =
-            [ { material = aguardiente, quantity = CL 6 } -- “Cuban Aguardiente”, rum like?
-            , { material = lemonJuice, quantity = CL 1.5 }
-            , { material = honey, quantity = CL 1.5 }
-            , { material = water, quantity = CL 5 }
-            , { material = lime, quantity = Wedge 1 }
-            ]
-      , description = """Mix honey with water and lime juice and spread the mixture on the bottom and sides of the glass. Add cracked ice, and then the rum. End by energetically stirring from bottom to top. Garnish with Lime wedge."""
-      , glass = OldFashioned
-      }
-
     -- https://iba-world.com/new-era-drinks/fernandito/
     , { name = "Fernandito"
       , ingredients =
