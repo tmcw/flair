@@ -2,7 +2,7 @@ module Main exposing (Msg(..), main, update, view)
 
 import Browser
 import Browser.Events
-import Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
+import Data exposing (Glass(..), Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
 import Element exposing (Element, alignTop, centerX, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -248,7 +248,6 @@ update msg model =
 
         SetSubsitute on ->
             { model | pedantic = on }
-                |> fuzzyIngredients on
                 |> deriveMaterials
 
         Ignored ->
@@ -294,7 +293,7 @@ materialKey ingredient =
     ingredient.name
 
 
-countMaterials : Model -> IngredientType -> List CachedMaterial
+countMaterials : Model -> MaterialType -> List CachedMaterial
 countMaterials model t =
     List.filter (\material -> material.t == t) model.materials
         |> List.map
@@ -366,122 +365,6 @@ deriveMaterials model =
                             ]
                 }
            )
-
-
-fuzzRecipe : Recipe -> Recipe
-fuzzRecipe recipe =
-    { recipe
-        | ingredients =
-            List.map
-                fuzzyIngredient
-                recipe.ingredients
-    }
-
-
-fuzzyIngredients : Bool -> Model -> Model
-fuzzyIngredients pedantic model =
-    if not pedantic then
-        { model
-            | recipes =
-                List.map
-                    fuzzRecipe
-                    recipes
-        }
-
-    else
-        model
-
-
-fuzzyCategories : List ( String, Material )
-fuzzyCategories =
-    [ ( "whiskey"
-      , { name = "Whiskey"
-        , t = Spirit
-        }
-      )
-    , ( "rum"
-      , { name = "Rum"
-        , t = Spirit
-        }
-      )
-    , ( "cachaça"
-      , { name = "Rum"
-        , t = Spirit
-        }
-      )
-    , ( "ginger"
-      , { name = "Ginger beer"
-        , t = Spirit
-        }
-      )
-
-    -- Make sure this is below `ginger` or fix it.
-    , ( "gin"
-      , { name = "Gin"
-        , t = Spirit
-        }
-      )
-    , ( "cognac"
-      , { name = "Brandy"
-        , t = Spirit
-        }
-      )
-    , ( "crème de menthe"
-      , { name = "Crème de menthe"
-        , t = Liqueur
-        }
-      )
-    , ( "crème de cacao"
-      , { name = "Crème de cacao"
-        , t = Liqueur
-        }
-      )
-    , ( "prosecco"
-      , { name = "Sparkling wine"
-        , t = Base
-        }
-      )
-    , ( "champagne"
-      , { name = "Sparkling wine"
-        , t = Base
-        }
-      )
-    , ( "gomme"
-      , { name = "Simple syrup"
-        , t = Syrup
-        }
-      )
-    , ( "sugar"
-      , { name = "Sugar"
-        , t = Seasoning
-        }
-      )
-    , ( "salt"
-      , { name = "Salt"
-        , t = Seasoning
-        }
-      )
-    , ( "espresso"
-      , { name = "Coffee"
-        , t = Other
-        }
-      )
-    ]
-
-
-fuzzyIngredient : Ingredient -> Ingredient
-fuzzyIngredient ingredient =
-    { ingredient
-        | material =
-            fuzzyCategories
-                |> List.filter
-                    (\( fuzzString, _ ) ->
-                        ingredient.material.name |> String.toLower |> String.contains fuzzString
-                    )
-                |> List.head
-                |> Maybe.map (\( _, mat ) -> mat)
-                |> Maybe.withDefault ingredient.material
-    }
 
 
 keyDecoder : Decode.Decoder Msg
@@ -593,8 +476,8 @@ checkboxIcon checked =
         Element.none
 
 
-materialNavigationItem : CachedMaterial -> Element.Element Msg
-materialNavigationItem ( count, checked, material ) =
+materialNavigationItem : Bool -> CachedMaterial -> Element.Element Msg
+materialNavigationItem pedantic ( count, checked, material ) =
     Input.checkbox []
         { onChange = \_ -> ToggleIngredient material (not checked)
         , icon = checkboxIcon
@@ -619,13 +502,21 @@ title name =
         (text name)
 
 
-listMaterials : List MaterialsGroup -> Element.Element Msg
-listMaterials countedMaterials =
+listMaterials : Bool -> List MaterialsGroup -> Element.Element Msg
+listMaterials pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
                 title label
-                    :: List.map materialNavigationItem materials
+                    :: List.map (materialNavigationItem pedantic)
+                        (if pedantic then
+                            materials
+
+                         else
+                            List.filter
+                                (\( _, _, material ) -> material.super == SuperMaterial Nothing)
+                                materials
+                        )
             )
         |> column [ spacing 8, alignTop, Element.width Element.shrink ]
 
@@ -986,7 +877,7 @@ gridView : Model -> Element.Element Msg
 gridView model =
     let
         mod =
-            fuzzyIngredients True model
+            model
 
         sortedMaterials =
             mod.materials
@@ -1043,7 +934,7 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listMaterials model.countedMaterials
+                        [ listMaterials model.pedantic model.countedMaterials
                         ]
                     , column
                         [ alignTop

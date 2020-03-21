@@ -1,10 +1,10 @@
-module Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
+module Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
 
 import Quantity exposing (Quantity(..))
 
 
 type
-    IngredientType
+    MaterialType
     -- Main alcohol types:
     = Base -- Fermented base: Sparkling wine, beer, cider, etc.
     | Fortified -- Fermented base with extra alcohol: Port, sherry, vermouth, americano, etc.
@@ -46,8 +46,13 @@ type Glass
 
 type alias Material =
     { name : String
-    , t : IngredientType
+    , t : MaterialType
+    , super : SuperMaterial
     }
+
+
+type SuperMaterial
+    = SuperMaterial (Maybe Material)
 
 
 type alias Ingredient =
@@ -56,74 +61,103 @@ type alias Ingredient =
     }
 
 
+material : String -> MaterialType -> Material
+material name t =
+    { name = name, t = t, super = SuperMaterial Nothing }
+
+
+material3 : String -> MaterialType -> Material -> Material
+material3 name t super =
+    { name = name, t = t, super = SuperMaterial (Just super) }
+
+
+
+-- Whiskey
+
+
 whiskey : Material
 whiskey =
-    { name = "Whiskey", t = Spirit }
+    material "Whiskey" Spirit
 
 
 scotchWhiskey : Material
 scotchWhiskey =
-    { name = "Scotch whiskey", t = Spirit }
-
-
-drambuie : Material
-drambuie =
-    { name = "Drambuie", t = Liqueur }
+    material3 "Scotch whiskey" Spirit whiskey
 
 
 bourbonWhiskey : Material
 bourbonWhiskey =
-    { name = "Bourbon whiskey", t = Spirit }
+    material3 "Bourbon whiskey" Spirit whiskey
 
 
 canadianWhiskey : Material
 canadianWhiskey =
-    { name = "Canadian whiskey", t = Spirit }
-
-
-water : Material
-water =
-    { name = "Water", t = Other }
-
-
-sodaWater : Material
-sodaWater =
-    { name = "Soda water", t = Other }
+    material3 "Canadian whiskey" Spirit whiskey
 
 
 ryeWhiskey : Material
 ryeWhiskey =
-    { name = "Rye whiskey", t = Spirit }
+    material3 "Rye whiskey" Spirit whiskey
+
+
+irishWhiskey : Material
+irishWhiskey =
+    material3 "Irish whiskey" Spirit whiskey
+
+
+drambuie : Material
+drambuie =
+    material "Drambuie" Liqueur
+
+
+water : Material
+water =
+    material "Water" Other
+
+
+sodaWater : Material
+sodaWater =
+    material "Soda water" Other
 
 
 gin : Material
 gin =
-    { name = "Gin", t = Spirit }
+    material "Gin" Spirit
+
+
+oldTomGin : Material
+oldTomGin =
+    material3 "Old tom gin" Spirit gin
+
+
+londonDryGin : Material
+londonDryGin =
+    material3 "London dry gin" Spirit gin
 
 
 whiteCremeDeMenthe : Material
 whiteCremeDeMenthe =
-    { name = "White crème de menthe", t = Liqueur }
+    material "White crème de menthe" Liqueur
 
 
 cremeDeMure : Material
 cremeDeMure =
-    { name = "Crème de mure", t = Liqueur }
+    material "Crème de mure" Liqueur
 
 
 maraschino : Material
 maraschino =
-    { name = "Maraschino", t = Liqueur }
+    material "Maraschino" Liqueur
 
 
 brandy : Material
 brandy =
-    { name = "Brandy", t = Spirit }
+    material "Brandy" Spirit
 
 
 apricotBrandy : Material
 apricotBrandy =
-    { name = "Apricot brandy", t = Liqueur }
+    material "Apricot brandy" Liqueur
 
 
 
@@ -132,472 +166,447 @@ apricotBrandy =
 
 pport : Material
 pport =
-    { name = "Port", t = Fortified }
+    material "Port" Fortified
 
 
 calvados : Material
 calvados =
-    { name = "Calvados", t = Spirit }
+    material "Calvados" Spirit
 
 
 peachBitters : Material
 peachBitters =
-    { name = "Peach bitters", t = Bitters }
+    material "Peach bitters" Bitters
 
 
 orangeBitters : Material
 orangeBitters =
-    { name = "Orange bitters", t = Bitters }
+    material "Orange bitters" Bitters
 
 
 angosturaBitters : Material
 angosturaBitters =
-    { name = "Angostura bitters", t = Bitters }
+    material "Angostura bitters" Bitters
 
 
 peychaudsBitters : Material
 peychaudsBitters =
-    { name = "Peychaud’s bitters", t = Bitters }
+    material "Peychaud’s bitters" Bitters
 
 
 lemon : Material
 lemon =
-    { name = "Lemon", t = Fruit }
+    material "Lemon" Fruit
 
 
 blackberry : Material
 blackberry =
-    { name = "Blackberry", t = Fruit }
+    material "Blackberry" Fruit
 
 
 cherry : Material
 cherry =
-    { name = "Cherry", t = Fruit }
+    material "Cherry" Fruit
 
 
 pineapple : Material
 pineapple =
-    { name = "Pineapple", t = Fruit }
+    material "Pineapple" Fruit
 
 
 sweetRedVermouth : Material
 sweetRedVermouth =
-    { name = "Sweet red vermouth", t = Fortified }
+    material "Sweet red vermouth" Fortified
 
 
 dryVermouth : Material
 dryVermouth =
-    { name = "Dry vermouth", t = Fortified }
+    material "Dry vermouth" Fortified
 
 
 cognac : Material
 cognac =
-    { name = "Cognac", t = Spirit }
+    material "Cognac" Spirit
 
 
 tripleSec : Material
 tripleSec =
-    { name = "Triple sec", t = Liqueur }
+    material "Triple sec" Liqueur
 
 
 grenadine : Material
 grenadine =
-    { name = "Grenadine", t = Syrup }
+    material "Grenadine" Syrup
 
 
 oj : Material
 oj =
-    { name = "Orange juice", t = Juice }
+    material "Orange juice" Juice
 
 
 pineappleJuice : Material
 pineappleJuice =
-    { name = "Pineapple juice", t = Juice }
+    material "Pineapple juice" Juice
 
 
 lime : Material
 lime =
-    { name = "Lime", t = Fruit }
+    material "Lime" Fruit
 
 
 cachaca : Material
 cachaca =
-    { name = "Cachaça", t = Spirit }
-
-
-whiteVermouth : Material
-whiteVermouth =
-    { name = "White vermouth", t = Fortified }
+    material "Cachaça" Spirit
 
 
 sugar : Material
 sugar =
-    { name = "Sugar", t = Seasoning }
+    material "Sugar" Seasoning
 
 
 absinthe : Material
 absinthe =
-    { name = "Absinthe", t = Liqueur }
+    material "Absinthe" Liqueur
 
 
 campari : Material
 campari =
-    { name = "Campari", t = Liqueur }
+    material "Campari" Liqueur
 
 
 fernetBranca : Material
 fernetBranca =
-    { name = "Fernet Branca", t = Liqueur }
+    material "Fernet Branca" Liqueur
 
 
 simpleSyrup : Material
 simpleSyrup =
-    { name = "Simple syrup", t = Syrup }
+    material "Simple syrup" Syrup
 
 
 gommeSyrup : Material
 gommeSyrup =
-    { name = "Gomme syrup", t = Syrup }
+    material "Gomme syrup" Syrup
 
 
 raspberrySyrup : Material
 raspberrySyrup =
-    { name = "Raspberry syrup", t = Syrup }
+    material "Raspberry syrup" Syrup
 
 
 raspberryLiqueur : Material
 raspberryLiqueur =
-    { name = "Raspberry liqueur", t = Liqueur }
+    material "Raspberry liqueur" Liqueur
 
 
 orange : Material
 orange =
-    { name = "Orange", t = Fruit }
-
-
-egg : Material
-egg =
-    { name = "Egg", t = Other }
+    material "Orange" Fruit
 
 
 eggYolk : Material
 eggYolk =
-    { name = "Egg yolk", t = Other }
+    material "Egg yolk" Other
 
 
 eggWhite : Material
 eggWhite =
-    { name = "Egg white", t = Other }
-
-
-cider : Material
-cider =
-    { name = "Cider", t = Base }
+    material "Egg white" Other
 
 
 champagne : Material
 champagne =
-    { name = "Champagne", t = Base }
+    material "Champagne" Base
 
 
 tequila : Material
 tequila =
-    { name = "Tequila", t = Spirit }
+    material "Tequila" Spirit
+
+
+rum : Material
+rum =
+    material "Rum" Spirit
 
 
 whiteRum : Material
 whiteRum =
-    { name = "White rum", t = Spirit }
+    material3 "White rum" Spirit rum
 
 
 goldRum : Material
 goldRum =
-    { name = "Gold rum", t = Spirit }
+    material3 "Gold rum" Spirit rum
 
 
 demeraraRum : Material
 demeraraRum =
-    { name = "Demerara rum", t = Spirit }
+    material3 "Demerara rum" Spirit rum
 
 
 darkRum : Material
 darkRum =
-    { name = "Dark rum", t = Spirit }
+    material3 "Dark rum" Spirit rum
 
 
 limeJuice : Material
 limeJuice =
-    { name = "Lime juice", t = Juice }
+    material "Lime juice" Juice
 
 
 cream : Material
 cream =
-    { name = "Cream", t = Other }
+    material "Cream" Other
 
 
 brownCremeDeCacao : Material
 brownCremeDeCacao =
-    { name = "Brown crème de cacao", t = Liqueur }
+    material "Brown crème de cacao" Liqueur
 
 
 whiteCremeDeCacao : Material
 whiteCremeDeCacao =
-    { name = "White crème de cacao", t = Liqueur }
+    material "White crème de cacao" Liqueur
 
 
 lightCream : Material
 lightCream =
-    { name = "Light cream", t = Other }
+    material "Light cream" Other
 
 
 orangeFlowerWater : Material
 orangeFlowerWater =
-    { name = "Orange flower water", t = Other }
+    material "Orange flower water" Other
 
 
 vanillaExtract : Material
 vanillaExtract =
-    { name = "Vanilla extract", t = Other }
+    material "Vanilla extract" Other
 
 
 cola : Material
 cola =
-    { name = "Cola", t = Other }
+    material "Cola" Other
 
 
 nutmeg : Material
 nutmeg =
-    { name = "Nutmeg", t = Seasoning }
+    material "Nutmeg" Seasoning
 
 
 lemonJuice : Material
 lemonJuice =
-    { name = "Lemon juice", t = Juice }
+    material "Lemon juice" Juice
 
 
 vodka : Material
 vodka =
-    { name = "Vodka", t = Spirit }
+    material "Vodka" Spirit
 
 
 gingerBeer : Material
 gingerBeer =
-    { name = "Ginger beer", t = Other }
+    material "Ginger beer" Other
 
 
 gingerAle : Material
 gingerAle =
-    { name = "Ginger ale", t = Other }
+    material "Ginger ale" Other
 
 
 prosecco : Material
 prosecco =
-    { name = "Prosecco", t = Base }
+    material "Prosecco" Base
 
 
 mint : Material
 mint =
-    { name = "Mint", t = Seasoning }
+    material "Mint" Seasoning
 
 
 peachPuree : Material
 peachPuree =
-    { name = "Peach purée", t = Other }
+    material "Peach purée" Other
 
 
 coffeeLiqueur : Material
 coffeeLiqueur =
-    { name = "Coffee liqueur", t = Liqueur }
+    material "Coffee liqueur" Liqueur
 
 
 lilletBlanc : Material
 lilletBlanc =
-    { name = "Lillet blanc", t = Fortified }
-
-
-irishWhiskey : Material
-irishWhiskey =
-    { name = "Irish whiskey", t = Spirit }
-
-
-oldTomGin : Material
-oldTomGin =
-    { name = "Old tom gin", t = Spirit }
-
-
-londonDryGin : Material
-londonDryGin =
-    { name = "London dry gin", t = Spirit }
+    material "Lillet blanc" Fortified
 
 
 greenCremeDeMenthe : Material
 greenCremeDeMenthe =
-    { name = "Green crème de menthe", t = Liqueur }
+    material "Green crème de menthe" Liqueur
 
 
 cremeDeCassis : Material
 cremeDeCassis =
-    { name = "Crème de cassis", t = Liqueur }
+    material "Crème de cassis" Liqueur
 
 
 amaretto : Material
 amaretto =
-    { name = "Amaretto", t = Liqueur }
+    material "Amaretto" Liqueur
 
 
 olive : Material
 olive =
-    { name = "Olive", t = Other }
+    material "Olive" Other
 
 
 dryWhiteWine : Material
 dryWhiteWine =
-    { name = "Dry white wine", t = Base }
+    material "Dry white wine" Base
 
 
 sparklingWine : Material
 sparklingWine =
-    { name = "Sparkling wine", t = Base }
+    material "Sparkling wine" Base
 
 
 peachSchnapps : Material
 peachSchnapps =
-    { name = "Peach schnapps", t = Liqueur }
+    material "Peach schnapps" Liqueur
 
 
 cherryLiqueur : Material
 cherryLiqueur =
-    { name = "Cherry liqueur", t = Liqueur }
+    material "Cherry liqueur" Liqueur
 
 
 domBenedictine : Material
 domBenedictine =
-    { name = "DOM Bénédictine", t = Liqueur }
+    material "DOM Bénédictine" Liqueur
 
 
 oliveJuice : Material
 oliveJuice =
-    { name = "Olive juice", t = Juice }
+    material "Olive juice" Juice
 
 
 cranberryJuice : Material
 cranberryJuice =
-    { name = "Cranberry juice", t = Juice }
+    material "Cranberry juice" Juice
 
 
 grapefruitJuice : Material
 grapefruitJuice =
-    { name = "Grapefruit juice", t = Juice }
+    material "Grapefruit juice" Juice
 
 
 tomatoJuice : Material
 tomatoJuice =
-    { name = "Tomato juice", t = Juice }
+    material "Tomato juice" Juice
 
 
 pepper : Material
 pepper =
-    { name = "Pepper", t = Seasoning }
+    material "Pepper" Seasoning
 
 
 salt : Material
 salt =
-    { name = "Salt", t = Seasoning }
+    material "Salt" Seasoning
 
 
 celerySalt : Material
 celerySalt =
-    { name = "Celery salt", t = Seasoning }
+    material "Celery salt" Seasoning
 
 
 caneSugar : Material
 caneSugar =
-    { name = "Cane sugar", t = Seasoning }
+    material "Cane sugar" Seasoning
 
 
 powderedSugar : Material
 powderedSugar =
-    { name = "Powdered sugar", t = Seasoning }
+    material "Powdered sugar" Seasoning
 
 
 aperol : Material
 aperol =
-    { name = "Aperol", t = Liqueur }
+    material "Aperol" Liqueur
 
 
 galliano : Material
 galliano =
-    { name = "Galliano", t = Liqueur }
+    material "Galliano" Liqueur
 
 
 pisco : Material
 pisco =
-    { name = "Pisco", t = Spirit }
+    material "Pisco" Spirit
 
 
 orgeatSyrup : Material
 orgeatSyrup =
-    { name = "Orgeat (almond) syrup", t = Syrup }
+    material "Orgeat (almond) syrup" Syrup
 
 
 cinnamonSyrup : Material
 cinnamonSyrup =
-    { name = "Cinnamon syrup", t = Syrup }
+    material "Cinnamon syrup" Syrup
 
 
 agaveNectar : Material
 agaveNectar =
-    { name = "Agave nectar", t = Syrup }
+    material "Agave nectar" Syrup
 
 
 coconutCream : Material
 coconutCream =
-    { name = "Coconut cream", t = Other }
+    material "Coconut cream" Other
 
 
 espresso : Material
 espresso =
-    { name = "Espresso", t = Other }
+    material "Espresso" Other
 
 
 coffee : Material
 coffee =
-    { name = "Coffee", t = Other }
+    material "Coffee" Other
 
 
 worcestershireSauce : Material
 worcestershireSauce =
-    { name = "Worcestershire sauce", t = Other }
+    material "Worcestershire sauce" Other
 
 
 irishCream : Material
 irishCream =
-    { name = "Irish cream liqueur", t = Liqueur }
+    material "Irish cream liqueur" Liqueur
 
 
 falernum : Material
 falernum =
-    { name = "Falernum", t = Liqueur }
+    material "Falernum" Liqueur
 
 
 tabasco : Material
 tabasco =
-    { name = "Tabasco", t = Other }
+    material "Tabasco" Other
 
 
 celery : Material
 celery =
-    { name = "Celery", t = Other }
+    material "Celery" Other
 
 
 aromaticBitters : Material
 aromaticBitters =
-    { name = "Aromatic bitters", t = Bitters }
+    material "Aromatic bitters" Bitters
 
 
 greenChartreuse : Material
 greenChartreuse =
-    { name = "Green Chartreuse", t = Liqueur }
+    material "Green Chartreuse" Liqueur
 
 
 type alias Recipe =
