@@ -360,6 +360,7 @@ deriveMaterials model =
                             , ( "BITTERS", Bitters )
                             , ( "SYRUP", Syrup )
                             , ( "JUICE", Juice )
+                            , ( "SODA", Soda )
                             , ( "FRUIT", Fruit )
                             , ( "SEASONING", Seasoning )
                             , ( "OTHER", Other )
