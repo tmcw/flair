@@ -817,106 +817,110 @@ listRecipes model =
 header : Model -> Element.Element Msg
 header model =
     row [ Element.width Element.fill, padding 20 ]
-        [ Input.radioRow
-            [ spacing 20
-            ]
-            { onChange = SetMode
-            , selected = Just model.mode
-            , label = Input.labelHidden "Mode"
-            , options =
-                [ Input.option Normal (text "List")
-                , Input.option Grid (text "Grid")
+        [ row [ Element.width Element.shrink, Element.alignLeft ]
+            [ Input.radioRow
+                [ spacing 20
                 ]
-            }
-        , Input.checkbox
-            [ paddingEach
-                { left = 20
-                , top = 0
-                , bottom = 0
-                , right = 5
-                }
-            ]
-            { onChange = SetSubsitute
-            , icon = Input.defaultCheckbox
-            , checked = model.pedantic
-            , label =
-                Input.labelRight []
-                    (text "Pedantic")
-            }
-        , Input.checkbox
-            [ paddingEach
-                { left = 20
-                , top = 0
-                , bottom = 0
-                , right = 5
-                }
-            ]
-            { onChange = SetDark
-            , icon = Input.defaultCheckbox
-            , checked = model.dark
-            , label =
-                Input.labelRight []
-                    (text "Dark")
-            }
-        , el []
-            (Element.link
-                [ Font.color
-                    (if model.dark then
-                        lightBlue
-
-                     else
-                        blue
-                    )
-                ]
-                { url = "https://github.com/tmcw/flair", label = text "{source code}" }
-            )
-        , el
-            [ paddingEach
-                { edges
-                    | left = 40
-                    , right = 5
-                }
-            ]
-            (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
-        , el []
-            (select
-                [ Html.Events.onInput SetSort
-                , Html.Attributes.id
-                    "sort"
-                ]
-                [ option [ value "Feasibility" ]
-                    [ Html.text "Feasibility"
+                { onChange = SetMode
+                , selected = Just model.mode
+                , label = Input.labelHidden "Mode"
+                , options =
+                    [ Input.option Normal (text "List")
+                    , Input.option Grid (text "Grid")
                     ]
-                , option [ value "Alphabetical" ]
-                    [ Html.text "Alphabetical"
+                }
+            , Input.checkbox
+                [ paddingEach
+                    { left = 20
+                    , top = 0
+                    , bottom = 0
+                    , right = 5
+                    }
+                ]
+                { onChange = SetSubsitute
+                , icon = Input.defaultCheckbox
+                , checked = model.pedantic
+                , label =
+                    Input.labelRight []
+                        (text "Pedantic")
+                }
+            , Input.checkbox
+                [ paddingEach
+                    { left = 20
+                    , top = 0
+                    , bottom = 0
+                    , right = 5
+                    }
+                ]
+                { onChange = SetDark
+                , icon = Input.defaultCheckbox
+                , checked = model.dark
+                , label =
+                    Input.labelRight []
+                        (text "Dark")
+                }
+            ]
+        , row [ Element.width Element.shrink, Element.alignRight ]
+            [ el []
+                (Element.link
+                    [ Font.color
+                        (if model.dark then
+                            lightBlue
+
+                         else
+                            blue
+                        )
+                    ]
+                    { url = "https://github.com/tmcw/flair", label = text "{source code}" }
+                )
+            , el
+                [ paddingEach
+                    { edges
+                        | left = 40
+                        , right = 5
+                    }
+                ]
+                (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
+            , el []
+                (select
+                    [ Html.Events.onInput SetSort
+                    , Html.Attributes.id
+                        "sort"
+                    ]
+                    [ option [ value "Feasibility" ]
+                        [ Html.text "Feasibility"
+                        ]
+                    , option [ value "Alphabetical" ]
+                        [ Html.text "Alphabetical"
+                        ]
+                    ]
+                    |> html
+                )
+            , el
+                [ paddingEach
+                    { edges
+                        | left = 40
+                        , right = 5
+                    }
+                ]
+                (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
+            , select
+                [ Html.Events.onInput SetUnits
+                , Html.Attributes.id
+                    "units"
+                ]
+                [ option [ value "Ml" ]
+                    [ Html.text "Ml"
+                    ]
+                , option [ value "Cl" ]
+                    [ Html.text "Cl"
+                    ]
+                , option [ value "Oz" ]
+                    [ Html.text "Oz"
                     ]
                 ]
                 |> html
-            )
-        , el
-            [ paddingEach
-                { edges
-                    | left = 40
-                    , right = 5
-                }
             ]
-            (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
-        , select
-            [ Html.Events.onInput SetUnits
-            , Html.Attributes.id
-                "units"
-            ]
-            [ option [ value "Ml" ]
-                [ Html.text "Ml"
-                ]
-            , option [ value "Cl" ]
-                [ Html.text "Cl"
-                ]
-            , option [ value "Oz" ]
-                [ Html.text "Oz"
-                ]
-            ]
-            |> html
         ]
 
 
