@@ -1,4 +1,4 @@
-module Main exposing (Msg(..), main, update, view)
+port module Main exposing (main, setStorage)
 
 import Browser
 import Browser.Events
@@ -286,6 +286,9 @@ main =
         , view = view
         , subscriptions = subscriptions
         }
+
+
+port setStorage : List String -> Cmd msg
 
 
 materialKey : Material -> String
