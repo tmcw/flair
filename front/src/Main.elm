@@ -1,8 +1,8 @@
-module Main exposing (Msg(..), main, update, view)
+port module Main exposing (Msg(..), main, setDark, update, view)
 
 import Browser
 import Browser.Events
-import Data exposing (Glass(..), Ingredient, IngredientType(..), Material, Recipe, recipes)
+import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
 import Element exposing (Element, alignTop, centerX, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -57,6 +57,7 @@ type alias Model =
     , mode : Mode
     , pedantic : Bool
     , sort : Sort
+    , dark : Bool
     , countedMaterials : List MaterialsGroup
     }
 
@@ -67,6 +68,7 @@ type Msg
     | SetUnits String
     | SetMode Mode
     | SetSubsitute Bool
+    | SetDark Bool
     | SetSort String
     | MoveUp
     | MoveDown
@@ -132,14 +134,9 @@ drinkIcon recipe =
 -- Constants
 
 
-background : Element.Color
-background =
-    Element.rgb255 249 247 244
-
-
-selectedColor : Element.Color
-selectedColor =
-    Element.rgb255 229 227 224
+white : Element.Color
+white =
+    Element.rgb 229 227 224
 
 
 black : Element.Color
@@ -150,6 +147,16 @@ black =
 blue : Element.Color
 blue =
     Element.rgb255 29 27 124
+
+
+lightBlue : Element.Color
+lightBlue =
+    Element.rgb255 129 127 224
+
+
+clear : Element.Color
+clear =
+    Element.rgba255 0 0 0 0
 
 
 edges : { top : Int, right : Int, bottom : Int, left : Int }
@@ -167,19 +174,21 @@ edges =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( case msg of
+    case msg of
         SelectRecipe recipe ->
-            { model
+            ( { model
                 | selectedRecipe =
                     if Just recipe == model.selectedRecipe then
                         Nothing
 
                     else
                         Just recipe
-            }
+              }
+            , Cmd.none
+            )
 
         SetUnits units ->
-            { model
+            ( { model
                 | units =
                     case units of
                         "Cl" ->
@@ -193,10 +202,12 @@ update msg model =
 
                         _ ->
                             Cl
-            }
+              }
+            , Cmd.none
+            )
 
         SetSort sort ->
-            { model
+            ( { model
                 | sort =
                     case sort of
                         "Alphabetical" ->
@@ -207,11 +218,13 @@ update msg model =
 
                         _ ->
                             Alphabetical
-            }
+              }
                 |> deriveMaterials
+            , Cmd.none
+            )
 
         MoveUp ->
-            { model
+            ( { model
                 | selectedRecipe =
                     case model.selectedRecipe of
                         Just r ->
@@ -219,10 +232,12 @@ update msg model =
 
                         Nothing ->
                             List.head model.recipes
-            }
+              }
+            , Cmd.none
+            )
 
         MoveDown ->
-            { model
+            ( { model
                 | selectedRecipe =
                     case model.selectedRecipe of
                         Just r ->
@@ -230,31 +245,37 @@ update msg model =
 
                         Nothing ->
                             List.head model.recipes
-            }
+              }
+            , Cmd.none
+            )
 
         ToggleIngredient ingredient checked ->
-            { model
+            ( { model
                 | availableMaterials =
                     if checked then
                         Set.Any.insert ingredient model.availableMaterials
 
                     else
                         Set.Any.remove ingredient model.availableMaterials
-            }
+              }
                 |> deriveMaterials
+            , Cmd.none
+            )
 
         SetMode mode ->
-            { model | mode = mode }
+            ( { model | mode = mode }, Cmd.none )
 
         SetSubsitute on ->
-            { model | pedantic = on }
-                |> fuzzyIngredients on
+            ( { model | pedantic = on }
                 |> deriveMaterials
+            , Cmd.none
+            )
+
+        SetDark on ->
+            ( { model | dark = on }, setDark on )
 
         Ignored ->
-            model
-    , Cmd.none
-    )
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -273,10 +294,14 @@ init =
       , mode = Normal
       , pedantic = True
       , sort = Feasibility
+      , dark = False
       }
         |> deriveMaterials
     , Cmd.none
     )
+
+
+port setDark : Bool -> Cmd msg
 
 
 main : Program () Model Msg
@@ -294,12 +319,12 @@ materialKey ingredient =
     ingredient.name
 
 
-countMaterials : Model -> IngredientType -> List CachedMaterial
+countMaterials : Model -> MaterialType -> List CachedMaterial
 countMaterials model t =
     List.filter (\material -> material.t == t) model.materials
         |> List.map
             (\material ->
-                ( recipesWithIngredient recipes material
+                ( recipesWithIngredient model.pedantic recipes material
                 , Set.Any.member material model.availableMaterials
                 , material
                 )
@@ -312,13 +337,13 @@ deriveMaterials model =
     let
         ( sufficient, unsortedInsufficient ) =
             List.partition
-                (\recipe -> missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty)
+                (\recipe -> missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.isEmpty)
                 model.recipes
 
         insufficient =
             List.sortBy
                 (\recipe ->
-                    (missingIngredients model.availableMaterials recipe |> Set.Any.size |> toFloat)
+                    (missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.size |> toFloat)
                         / (List.length recipe.ingredients
                             |> toFloat
                           )
@@ -338,7 +363,17 @@ deriveMaterials model =
     in
     { model
         | materials =
-            List.concatMap (\recipe -> List.map (\ingredient -> ingredient.material) recipe.ingredients) model.recipes
+            List.concatMap
+                (\recipe ->
+                    List.concatMap
+                        (\ingredient ->
+                            [ aliasIngredient False ingredient
+                            , ingredient.material
+                            ]
+                        )
+                        recipe.ingredients
+                )
+                model.recipes
                 |> List.foldl (::) []
                 |> Set.Any.fromList materialKey
                 |> Set.Any.toList
@@ -369,107 +404,6 @@ deriveMaterials model =
            )
 
 
-fuzzyIngredients : Bool -> Model -> Model
-fuzzyIngredients pedantic model =
-    { model
-        | recipes =
-            if not pedantic then
-                List.map
-                    (\recipe ->
-                        { recipe
-                            | ingredients =
-                                List.map
-                                    fuzzyIngredient
-                                    recipe.ingredients
-                        }
-                    )
-                    recipes
-
-            else
-                recipes
-    }
-
-
-fuzzyIngredient : Ingredient -> Ingredient
-fuzzyIngredient ingredient =
-    { ingredient
-        | material =
-            if ingredient.material.name |> String.toLower |> String.contains "whiskey" then
-                { name = "Whiskey"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "rum" then
-                { name = "Rum"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "cachaça" then
-                { name = "Rum"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "ginger" then
-                { name = "Ginger beer"
-                , t = Spirit
-                }
-                -- Make sure this is below `ginger` or fix it.
-
-            else if ingredient.material.name |> String.toLower |> String.contains "gin" then
-                { name = "Gin"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "cognac" then
-                { name = "Brandy"
-                , t = Spirit
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "crème de menthe" then
-                { name = "Crème de menthe"
-                , t = Liqueur
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "crème de cacao" then
-                { name = "Crème de cacao"
-                , t = Liqueur
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "prosecco" then
-                { name = "Sparkling wine"
-                , t = Base
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "champagne" then
-                { name = "Sparkling wine"
-                , t = Base
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "gomme" then
-                { name = "Simple syrup"
-                , t = Syrup
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "sugar" then
-                { name = "Sugar"
-                , t = Seasoning
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "salt" then
-                { name = "Salt"
-                , t = Seasoning
-                }
-
-            else if ingredient.material.name |> String.toLower |> String.contains "espresso" then
-                { name = "Coffee"
-                , t = Other
-                }
-
-            else
-                ingredient.material
-    }
-
-
 keyDecoder : Decode.Decoder Msg
 keyDecoder =
     Decode.map toDirection (Decode.field "key" Decode.string)
@@ -488,47 +422,59 @@ toDirection string =
             Ignored
 
 
-getMaterials : Recipe -> MaterialSet
-getMaterials recipe =
-    List.map (\ingredient -> ingredient.material) recipe.ingredients
+aliasIngredient : Bool -> Ingredient -> Material
+aliasIngredient pedantic ingredient =
+    if pedantic then
+        ingredient.material
+
+    else
+        case ingredient.material.super of
+            SuperMaterial Nothing ->
+                ingredient.material
+
+            SuperMaterial (Just m) ->
+                m
+
+
+getMaterials : Bool -> Recipe -> MaterialSet
+getMaterials pedantic recipe =
+    List.map
+        (aliasIngredient pedantic)
+        recipe.ingredients
         |> Set.Any.fromList
             materialKey
 
 
-missingIngredients : MaterialSet -> Recipe -> MaterialSet
-missingIngredients availableMaterials recipe =
-    Set.Any.diff (getMaterials recipe) availableMaterials
+missingIngredients : Bool -> MaterialSet -> Recipe -> MaterialSet
+missingIngredients pedantic availableMaterials recipe =
+    Set.Any.diff (getMaterials pedantic recipe) availableMaterials
 
 
-getNeighbors : Model -> Recipe -> List Recipe
+getNeighbors : Model -> Recipe -> List ( List Material, List Material, Recipe )
 getNeighbors model recipe =
-    List.filter
-        (\r ->
-            let
-                rMaterials =
-                    getMaterials r
+    model.recipes
+        |> List.filter (\r -> r.name /= recipe.name)
+        |> List.map
+            (\r ->
+                let
+                    rMaterials =
+                        getMaterials model.pedantic r
 
-                recipeMaterials =
-                    getMaterials recipe
-            in
-            (r.name
-                /= recipe.name
+                    recipeMaterials =
+                        getMaterials model.pedantic recipe
+                in
+                ( Set.Any.diff rMaterials recipeMaterials |> Set.Any.toList
+                , Set.Any.diff recipeMaterials rMaterials |> Set.Any.toList
+                , r
+                )
             )
-                && (Set.Any.diff rMaterials recipeMaterials
-                        |> Set.Any.size
-                   )
-                <= 1
-                && (Set.Any.diff recipeMaterials rMaterials
-                        |> Set.Any.size
-                   )
-                <= 1
-        )
-        model.recipes
+        |> List.filter (\( add, remove, _ ) -> List.length add + List.length remove < 4)
+        |> List.sortBy (\( add, remove, _ ) -> List.length add + List.length remove)
 
 
-recipesWithIngredient : List Recipe -> Material -> Int
-recipesWithIngredient allRecipes ingredient =
-    List.filter (\recipe -> Set.Any.member ingredient (getMaterials recipe)) allRecipes
+recipesWithIngredient : Bool -> List Recipe -> Material -> Int
+recipesWithIngredient pedantic allRecipes ingredient =
+    List.filter (\recipe -> Set.Any.member ingredient (getMaterials pedantic recipe)) allRecipes
         |> List.length
 
 
@@ -549,8 +495,8 @@ getNext recipes target =
 -- User interface
 
 
-checkboxIcon : Bool -> Element msg
-checkboxIcon checked =
+checkboxIcon : Bool -> Bool -> Element msg
+checkboxIcon dark checked =
     el
         [ Element.width
             (Element.px
@@ -567,23 +513,33 @@ checkboxIcon checked =
             )
         , Element.centerY
         , Border.rounded 5
-        , Border.color black
+        , Border.color
+            (if dark then
+                white
+
+             else
+                black
+            )
         , Element.Background.color <|
             if checked then
-                black
+                if dark then
+                    white
+
+                else
+                    black
 
             else
-                background
+                clear
         , Border.width 1
         ]
         Element.none
 
 
-materialNavigationItem : CachedMaterial -> Element.Element Msg
-materialNavigationItem ( count, checked, material ) =
+materialNavigationItem : Bool -> CachedMaterial -> Element.Element Msg
+materialNavigationItem dark ( count, checked, material ) =
     Input.checkbox []
         { onChange = \_ -> ToggleIngredient material (not checked)
-        , icon = checkboxIcon
+        , icon = checkboxIcon dark
         , checked = checked
         , label =
             Input.labelRight []
@@ -605,13 +561,23 @@ title name =
         (text name)
 
 
-listMaterials : List MaterialsGroup -> Element.Element Msg
-listMaterials countedMaterials =
+listMaterials : Bool -> Bool -> List MaterialsGroup -> Element.Element Msg
+listMaterials dark pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
                 title label
-                    :: List.map materialNavigationItem materials
+                    :: List.map (materialNavigationItem dark)
+                        (if pedantic then
+                            List.filter
+                                (\( count, _, _ ) -> count > 0)
+                                materials
+
+                         else
+                            List.filter
+                                (\( count, _, material ) -> count > 0 && material.super == SuperMaterial Nothing)
+                                materials
+                        )
             )
         |> column [ spacing 8, alignTop, Element.width Element.shrink ]
 
@@ -659,19 +625,18 @@ glassName glass =
             "Zombie glass"
 
 
-neighborBlock : Recipe -> Recipe -> Element.Element Msg
-neighborBlock recipe neighbor =
-    let
-        add =
-            Set.Any.diff (getMaterials neighbor) (getMaterials recipe)
-                |> Set.Any.toList
-                |> List.head
+capitalize : String -> String
+capitalize str =
+    case String.toList str of
+        x :: xs ->
+            String.fromChar (Char.toUpper x) ++ String.fromList xs
 
-        remove =
-            Set.Any.diff (getMaterials recipe) (getMaterials neighbor)
-                |> Set.Any.toList
-                |> List.head
-    in
+        [] ->
+            ""
+
+
+neighborBlock : ( List Material, List Material, Recipe ) -> Element.Element Msg
+neighborBlock ( add, remove, neighbor ) =
     column
         [ spacing 10
         , Element.pointer
@@ -682,18 +647,12 @@ neighborBlock recipe neighbor =
         ]
         [ el [ Font.italic, Font.underline ] (text neighbor.name)
         , paragraph []
-            [ case ( add, remove ) of
-                ( Just a, Just b ) ->
-                    el [] (text ("Add " ++ a.name ++ ", remove " ++ b.name))
-
-                ( Just a, Nothing ) ->
-                    el [] (text ("Add " ++ a.name))
-
-                ( Nothing, Just b ) ->
-                    el [] (text ("Remove " ++ b.name))
-
-                ( Nothing, Nothing ) ->
-                    el [] (text "")
+            [ List.map (\a -> "add " ++ a.name) add
+                ++ List.map (\a -> "remove " ++ a.name) remove
+                |> String.join ", "
+                |> capitalize
+                |> text
+                |> el []
             ]
         ]
 
@@ -702,54 +661,79 @@ recipeBlock : Model -> Recipe -> Element.Element Msg
 recipeBlock model recipe =
     let
         viable =
-            missingIngredients model.availableMaterials recipe |> Set.Any.isEmpty
+            missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.isEmpty
 
         selected =
             model.selectedRecipe == Just recipe
     in
     column
-        [ spacing 10
-        , Element.pointer
-        , padding 10
-        , Element.Background.color
-            (if selected then
-                selectedColor
-
-             else
-                background
-            )
-        , Element.alpha
+        ([ spacing 10
+         , Element.pointer
+         , Element.alpha
             (if viable then
                 1
 
              else
                 0.5
             )
-        , Element.width Element.fill
-        , Element.height Element.fill
-        , alignTop
-        , onClick (SelectRecipe recipe)
-        ]
+         , Element.width Element.fill
+         , Element.height Element.fill
+         , alignTop
+         , onClick (SelectRecipe recipe)
+         ]
+            ++ (if selected then
+                    if model.dark then
+                        [ Border.color
+                            (Element.rgb255
+                                239
+                                237
+                                234
+                            )
+                        , Border.width 1
+                        , padding 9
+                        ]
+
+                    else
+                        [ Element.Background.color
+                            (Element.rgb255
+                                229
+                                227
+                                224
+                            )
+                        , padding 10
+                        ]
+
+                else
+                    [ padding 10
+                    ]
+               )
+        )
         [ row []
             [ drinkIcon recipe
             , el [ Font.italic, Font.underline ] (text recipe.name)
             ]
         , recipe.ingredients
             |> List.map
-                (\ingredient ->
-                    el
-                        (if Set.Any.member ingredient.material model.availableMaterials then
-                            []
-
-                         else
-                            [ strike ]
-                        )
-                        (text ingredient.material.name)
-                )
+                (listIngredientInBlock model)
             |> List.intersperse
                 (el [] (text ", "))
             |> paragraph [ paddingEach { edges | left = 5 } ]
         ]
+
+
+listIngredientInBlock : Model -> Ingredient -> Element.Element Msg
+listIngredientInBlock model ingredient =
+    el
+        (if
+            Set.Any.member (aliasIngredient model.pedantic ingredient)
+                model.availableMaterials
+         then
+            []
+
+         else
+            [ strike ]
+        )
+        (text ingredient.material.name)
 
 
 noneSelected : Element.Element Msg
@@ -790,6 +774,7 @@ displayRecipe model recipe =
                                 ++ printQuantity model.units ingredient.quantity
                                 ++ " "
                                 ++ ingredient.material.name
+                                ++ replacement model.pedantic ingredient
                             )
                         ]
                 )
@@ -802,9 +787,18 @@ displayRecipe model recipe =
 
                 else
                     title "NEIGHBORS"
-                        :: List.map (neighborBlock recipe) neighbors
+                        :: List.map neighborBlock neighbors
                )
         )
+
+
+replacement : Bool -> Ingredient -> String
+replacement pedantic ingredient =
+    if pedantic == False && ingredient.material.super /= SuperMaterial Nothing then
+        " (or " ++ (aliasIngredient pedantic ingredient).name ++ ")"
+
+    else
+        ""
 
 
 listRecipes : Model -> Element.Element Msg
@@ -819,84 +813,110 @@ listRecipes model =
 header : Model -> Element.Element Msg
 header model =
     row [ Element.width Element.fill, padding 20 ]
-        [ Input.radioRow
-            [ spacing 20
-            ]
-            { onChange = SetMode
-            , selected = Just model.mode
-            , label = Input.labelHidden "Mode"
-            , options =
-                [ Input.option Normal (text "List")
-                , Input.option Grid (text "Grid")
+        [ row [ Element.width Element.shrink, Element.alignLeft ]
+            [ Input.radioRow
+                [ spacing 20
                 ]
-            }
-        , Input.checkbox
-            [ paddingEach
-                { left = 20
-                , top = 0
-                , bottom = 0
-                , right = 5
-                }
-            ]
-            { onChange = SetSubsitute
-            , icon = Input.defaultCheckbox
-            , checked = model.pedantic
-            , label =
-                Input.labelRight []
-                    (text "Pedantic")
-            }
-        , el []
-            (Element.link
-                [ Font.color blue ]
-                { url = "https://github.com/tmcw/flair", label = text "{source code}" }
-            )
-        , el
-            [ paddingEach
-                { edges
-                    | left = 40
-                    , right = 5
-                }
-            ]
-            (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
-        , el []
-            (select
-                [ Html.Events.onInput SetSort
-                , Html.Attributes.id
-                    "sort"
-                ]
-                [ option [ value "Feasibility" ]
-                    [ Html.text "Feasibility"
+                { onChange = SetMode
+                , selected = Just model.mode
+                , label = Input.labelHidden "Mode"
+                , options =
+                    [ Input.option Normal (text "List")
+                    , Input.option Grid (text "Grid")
                     ]
-                , option [ value "Alphabetical" ]
-                    [ Html.text "Alphabetical"
+                }
+            , Input.checkbox
+                [ paddingEach
+                    { left = 20
+                    , top = 0
+                    , bottom = 0
+                    , right = 5
+                    }
+                ]
+                { onChange = SetSubsitute
+                , icon = Input.defaultCheckbox
+                , checked = model.pedantic
+                , label =
+                    Input.labelRight []
+                        (text "Pedantic")
+                }
+            , Input.checkbox
+                [ paddingEach
+                    { left = 20
+                    , top = 0
+                    , bottom = 0
+                    , right = 5
+                    }
+                ]
+                { onChange = SetDark
+                , icon = Input.defaultCheckbox
+                , checked = model.dark
+                , label =
+                    Input.labelRight []
+                        (text "Dark")
+                }
+            ]
+        , row [ Element.width Element.shrink, Element.alignRight ]
+            [ el []
+                (Element.link
+                    [ Font.color
+                        (if model.dark then
+                            lightBlue
+
+                         else
+                            blue
+                        )
+                    ]
+                    { url = "https://github.com/tmcw/flair", label = text "{source code}" }
+                )
+            , el
+                [ paddingEach
+                    { edges
+                        | left = 40
+                        , right = 5
+                    }
+                ]
+                (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
+            , el []
+                (select
+                    [ Html.Events.onInput SetSort
+                    , Html.Attributes.id
+                        "sort"
+                    ]
+                    [ option [ value "Feasibility" ]
+                        [ Html.text "Feasibility"
+                        ]
+                    , option [ value "Alphabetical" ]
+                        [ Html.text "Alphabetical"
+                        ]
+                    ]
+                    |> html
+                )
+            , el
+                [ paddingEach
+                    { edges
+                        | left = 40
+                        , right = 5
+                    }
+                ]
+                (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
+            , select
+                [ Html.Events.onInput SetUnits
+                , Html.Attributes.id
+                    "units"
+                ]
+                [ option [ value "Ml" ]
+                    [ Html.text "Ml"
+                    ]
+                , option [ value "Cl" ]
+                    [ Html.text "Cl"
+                    ]
+                , option [ value "Oz" ]
+                    [ Html.text "Oz"
                     ]
                 ]
                 |> html
-            )
-        , el
-            [ paddingEach
-                { edges
-                    | left = 40
-                    , right = 5
-                }
             ]
-            (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
-        , select
-            [ Html.Events.onInput SetUnits
-            , Html.Attributes.id
-                "units"
-            ]
-            [ option [ value "Ml" ]
-                [ Html.text "Ml"
-                ]
-            , option [ value "Cl" ]
-                [ Html.text "Cl"
-                ]
-            , option [ value "Oz" ]
-                [ Html.text "Oz"
-                ]
-            ]
-            |> html
         ]
 
 
@@ -934,7 +954,7 @@ renderDot material row =
                     black
 
                 else
-                    background
+                    clear
             , Border.width 1
             ]
             Element.none
@@ -972,12 +992,12 @@ gridView : Model -> Element.Element Msg
 gridView model =
     let
         mod =
-            fuzzyIngredients True model
+            model
 
         sortedMaterials =
             mod.materials
                 |> List.filter (\ingredient -> ingredient.t == Spirit || ingredient.t == Liqueur || ingredient.t == Fortified || ingredient.t == Base)
-                |> List.sortBy (\ingredient -> -(recipesWithIngredient model.recipes ingredient))
+                |> List.sortBy (\ingredient -> -(recipesWithIngredient False model.recipes ingredient))
     in
     el
         [ paddingEach
@@ -1005,10 +1025,16 @@ gridView model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Element.Background.color background
-        , padding 20
+        [ padding 20
         , Font.size 13
         , Element.width Element.fill
+        , Font.color
+            (if model.dark then
+                white
+
+             else
+                black
+            )
         , Font.family
             [ Font.typeface "IBM Plex Mono"
             , Font.monospace
@@ -1029,7 +1055,7 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listMaterials model.countedMaterials
+                        [ listMaterials model.dark model.pedantic model.countedMaterials
                         ]
                     , column
                         [ alignTop
