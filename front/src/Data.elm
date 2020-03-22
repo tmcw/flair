@@ -622,102 +622,97 @@ greenChartreuse =
 
 cremeDeViolette : Material
 cremeDeViolette =
-    { name = "Crème de violette", t = Liqueur }
+    material "Crème de violette" Liqueur
 
 
 aguardiente : Material
 aguardiente =
-    { name = "Aguardiente", t = Spirit }
+    material "Aguardiente" Spirit
 
 
 honeySyrup : Material
 honeySyrup =
-    { name = "Honey syrup", t = Syrup }
+    material "Honey syrup" Syrup
 
 
 honey : Material
 honey =
-    { name = "Honey", t = Other }
+    material "Honey" Other
 
 
 grapefruitSoda : Material
 grapefruitSoda =
-    { name = "Grapefruit soda", t = Soda }
+    material "Grapefruit soda" Soda
 
 
 amaroNonino : Material
 amaroNonino =
-    { name = "Amaro Nonino", t = Liqueur }
+    material "Amaro Nonino" Liqueur
 
 
 blendedScotchWhiskey : Material
 blendedScotchWhiskey =
-    { name = "Blended Scotch whiskey", t = Spirit }
+    material3 "Blended Scotch whiskey" Spirit whiskey
 
 
 islaySingleMaltScotch : Material
 islaySingleMaltScotch =
-    { name = "Islay Single Malt Scotch whiskey", t = Spirit }
+    material3 "Islay Single Malt Scotch whiskey" Spirit whiskey
 
 
 ginger : Material
 ginger =
-    { name = "Ginger", t = Other }
+    material "Ginger" Other
 
 
 candiedGinger : Material
 candiedGinger =
-    { name = "Candied ginger", t = Other }
+    material "Candied ginger" Other
 
 
 elderflowerSyrup : Material
 elderflowerSyrup =
-    { name = "Elderflower syrup", t = Syrup }
+    material "Elderflower syrup" Syrup
 
 
 grappa : Material
 grappa =
-    { name = "Grappa", t = Spirit }
+    material "Grappa" Spirit
 
 
 whiteGrape : Material
 whiteGrape =
-    { name = "White grape", t = Fruit }
+    material "White grape" Fruit
 
 
 mezcal : Material
 mezcal =
-    { name = "Mezcal", t = Spirit }
+    material "Mezcal" Spirit
 
 
 overproofWhiteRum : Material
 overproofWhiteRum =
-    { name = "Overproof white rum", t = Spirit }
+    material3 "Overproof white rum" Spirit rum
 
 
 yellowChartreuse : Material
 yellowChartreuse =
-    { name = "Yellow Chartreuse", t = Liqueur }
+    material "Yellow Chartreuse" Liqueur
 
 
 redWine : Material
 redWine =
-    { name = "Red wine", t = Base }
-
-
-rum : Material
-rum =
-    { name = "Rum", t = Spirit }
+    material3 "Red wine" Base wine
 
 
 redChiliPepper : Material
 redChiliPepper =
-    { name = "Red chili pepper", t = Fruit }
+    material "Red chili pepper" Fruit
 
 
 chamomileSyrup : Material
 chamomileSyrup =
-    { name = "Chamomile syrup", t = Syrup }
+    material "Chamomile syrup" Syrup
 
 
 type alias Recipe =
