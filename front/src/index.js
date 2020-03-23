@@ -9,7 +9,7 @@ document.body.style.transition = "background 600ms ease-in-out";
 
 app.ports.setDark.subscribe(dark => {
   if (dark) {
-    document.body.style.background = "black";
+    document.body.style.background = "#3c3c3c";
     document.body.style.color = "rgb(229, 227, 224)";
   } else {
     document.body.style.background = "rgb(249, 247, 244)";

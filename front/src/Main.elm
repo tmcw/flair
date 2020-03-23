@@ -291,7 +291,7 @@ init =
       , selectedRecipe = Nothing
       , availableMaterials = Set.Any.empty materialKey
       , units = Ml
-      , mode = Normal
+      , mode = Grid
       , pedantic = True
       , sort = Feasibility
       , dark = False
@@ -324,7 +324,7 @@ countMaterials model t =
     List.filter (\material -> material.t == t) model.materials
         |> List.map
             (\material ->
-                ( recipesWithIngredient model.pedantic recipes material
+                ( recipesWithMaterial model.pedantic recipes material
                 , Set.Any.member material model.availableMaterials
                 , material
                 )
@@ -367,7 +367,7 @@ deriveMaterials model =
                 (\recipe ->
                     List.concatMap
                         (\ingredient ->
-                            [ aliasIngredient False ingredient
+                            [ aliasMaterial False ingredient.material
                             , ingredient.material
                             ]
                         )
@@ -422,15 +422,15 @@ toDirection string =
             Ignored
 
 
-aliasIngredient : Bool -> Ingredient -> Material
-aliasIngredient pedantic ingredient =
+aliasMaterial : Bool -> Material -> Material
+aliasMaterial pedantic material =
     if pedantic then
-        ingredient.material
+        material
 
     else
-        case ingredient.material.super of
+        case material.super of
             SuperMaterial Nothing ->
-                ingredient.material
+                material
 
             SuperMaterial (Just m) ->
                 m
@@ -439,7 +439,7 @@ aliasIngredient pedantic ingredient =
 getMaterials : Bool -> Recipe -> MaterialSet
 getMaterials pedantic recipe =
     List.map
-        (aliasIngredient pedantic)
+        (\ingredient -> aliasMaterial pedantic ingredient.material)
         recipe.ingredients
         |> Set.Any.fromList
             materialKey
@@ -472,9 +472,9 @@ getNeighbors model recipe =
         |> List.sortBy (\( add, remove, _ ) -> List.length add + List.length remove)
 
 
-recipesWithIngredient : Bool -> List Recipe -> Material -> Int
-recipesWithIngredient pedantic allRecipes ingredient =
-    List.filter (\recipe -> Set.Any.member ingredient (getMaterials pedantic recipe)) allRecipes
+recipesWithMaterial : Bool -> List Recipe -> Material -> Int
+recipesWithMaterial pedantic allRecipes material =
+    List.filter (\recipe -> hasMaterial pedantic recipe material) allRecipes
         |> List.length
 
 
@@ -495,58 +495,66 @@ getNext recipes target =
 -- User interface
 
 
-checkboxIcon : Bool -> Bool -> Element msg
-checkboxIcon dark checked =
-    el
-        [ Element.width
-            (Element.px
-                10
-            )
-        , Element.height
-            (Element.px
+checkboxIconX : Int -> Bool -> Element msg
+checkboxIconX x checked =
+    let
+        wh =
+            x |> String.fromInt
+
+        c =
+            x // 2 |> String.fromInt
+
+        r =
+            x // 3 |> String.fromInt
+    in
+    svg
+        [ Svg.Attributes.width wh
+        , Svg.Attributes.height wh
+        ]
+        [ Svg.circle
+            [ Svg.Attributes.cx c
+            , Svg.Attributes.cy c
+            , Svg.Attributes.r r
+            , Svg.Attributes.stroke "currentColor"
+            , Svg.Attributes.strokeWidth "1"
+            , Svg.Attributes.fill
                 (if checked then
-                    10
+                    "currentColor"
 
                  else
-                    1
+                    "transparent"
                 )
-            )
-        , Element.centerY
-        , Border.rounded 5
-        , Border.color
-            (if dark then
-                white
-
-             else
-                black
-            )
-        , Element.Background.color <|
-            if checked then
-                if dark then
-                    white
-
-                else
-                    black
-
-            else
-                clear
-        , Border.width 1
+            ]
+            []
         ]
-        Element.none
+        |> html
 
 
-materialNavigationItem : Bool -> CachedMaterial -> Element.Element Msg
-materialNavigationItem dark ( count, checked, material ) =
+checkboxIcon =
+    checkboxIconX 12
+
+
+checkboxIconL =
+    checkboxIconX 14
+
+
+materialNavigationItem : CachedMaterial -> Element.Element Msg
+materialNavigationItem ( count, checked, material ) =
     Input.checkbox []
         { onChange = \_ -> ToggleIngredient material (not checked)
-        , icon = checkboxIcon dark
+        , icon = checkboxIcon
         , checked = checked
         , label =
             Input.labelRight []
                 (text
                     (String.fromInt count
                         ++ " "
-                        ++ material.name
+                        ++ (if material.name == "Islay Single Malt Scotch whiskey" then
+                                "Islay Whiskey"
+
+                            else
+                                material.name
+                           )
                     )
                 )
         }
@@ -561,13 +569,13 @@ title name =
         (text name)
 
 
-listMaterials : Bool -> Bool -> List MaterialsGroup -> Element.Element Msg
-listMaterials dark pedantic countedMaterials =
+listMaterials : Bool -> List MaterialsGroup -> Element.Element Msg
+listMaterials pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
                 title label
-                    :: List.map (materialNavigationItem dark)
+                    :: List.map materialNavigationItem
                         (if pedantic then
                             List.filter
                                 (\( count, _, _ ) -> count > 0)
@@ -725,7 +733,7 @@ listIngredientInBlock : Model -> Ingredient -> Element.Element Msg
 listIngredientInBlock model ingredient =
     el
         (if
-            Set.Any.member (aliasIngredient model.pedantic ingredient)
+            Set.Any.member (aliasMaterial model.pedantic ingredient.material)
                 model.availableMaterials
          then
             []
@@ -795,7 +803,7 @@ displayRecipe model recipe =
 replacement : Bool -> Ingredient -> String
 replacement pedantic ingredient =
     if pedantic == False && ingredient.material.super /= SuperMaterial Nothing then
-        " (or " ++ (aliasIngredient pedantic ingredient).name ++ ")"
+        " (or " ++ (aliasMaterial pedantic ingredient.material).name ++ ")"
 
     else
         ""
@@ -834,7 +842,7 @@ header model =
                     }
                 ]
                 { onChange = SetSubsitute
-                , icon = Input.defaultCheckbox
+                , icon = checkboxIconL
                 , checked = model.pedantic
                 , label =
                     Input.labelRight []
@@ -849,7 +857,7 @@ header model =
                     }
                 ]
                 { onChange = SetDark
-                , icon = Input.defaultCheckbox
+                , icon = checkboxIconL
                 , checked = model.dark
                 , label =
                     Input.labelRight []
@@ -920,72 +928,72 @@ header model =
         ]
 
 
-renderDot : Material -> Recipe -> Element.Element Msg
-renderDot material row =
-    let
-        on =
-            List.map (\i -> i.material) row.ingredients
-                |> Set.Any.fromList materialKey
-                |> Set.Any.member
-                    material
 
-        size =
-            if on then
-                10
+-- A fast check to see if a given recipe has an ingredient. Tries to skip
+-- any allocations
+
+
+hasMaterial : Bool -> Recipe -> Material -> Bool
+hasMaterial pedantic recipe material =
+    List.foldl
+        (\i has ->
+            if has then
+                has
 
             else
-                2
-    in
-    el
-        [ Element.width (Element.px 15)
-        , Element.height (Element.px 15)
-        , Element.centerX
-        , Element.centerY
-        ]
-        (el
-            [ Element.width (Element.px size)
-            , Element.height (Element.px size)
-            , Element.centerY
-            , Element.centerX
-            , Border.rounded 5
-            , Border.color black
-            , Element.Background.color <|
-                if on then
-                    black
-
-                else
-                    clear
-            , Border.width 1
-            ]
-            Element.none
+                aliasMaterial pedantic i.material == material
         )
+        False
+        recipe.ingredients
 
 
-getColumn : Material -> Element.Column Recipe Msg
+renderDot : Material -> Recipe -> Html.Html Msg
+renderDot material recipe =
+    let
+        on =
+            hasMaterial False recipe material
+    in
+    svg
+        [ Svg.Attributes.width "22"
+        , Svg.Attributes.height "22"
+        ]
+        [ Svg.circle
+            [ Svg.Attributes.cx "11"
+            , Svg.Attributes.cy "11"
+            , Svg.Attributes.fill "currentColor"
+            , Svg.Attributes.r
+                (if on then
+                    "4"
+
+                 else
+                    "1"
+                )
+            ]
+            []
+        ]
+
+
+getColumn : Material -> Html.Html Msg
 getColumn material =
-    { header =
-        svg
-            [ Svg.Attributes.width "22"
+    svg
+        [ Svg.Attributes.width "22"
+        , Svg.Attributes.height "160"
+        , Svg.Attributes.viewBox "0 0 20 160"
+        ]
+        [ Svg.text_
+            [ Svg.Attributes.x "-140"
+            , Svg.Attributes.y "10"
+            , Svg.Attributes.width "22"
             , Svg.Attributes.height "160"
-            , Svg.Attributes.viewBox "0 0 20 160"
+            , Svg.Attributes.rx "15"
+            , Svg.Attributes.ry "15"
+            , Svg.Attributes.transform "rotate(-90, 10, 8)"
+            , Svg.Attributes.textAnchor "start"
+            , Svg.Attributes.fill "currentColor"
             ]
-            [ Svg.text_
-                [ Svg.Attributes.x "-140"
-                , Svg.Attributes.y "10"
-                , Svg.Attributes.width "22"
-                , Svg.Attributes.height "160"
-                , Svg.Attributes.rx "15"
-                , Svg.Attributes.ry "15"
-                , Svg.Attributes.transform "rotate(-90, 12, 5)"
-                , Svg.Attributes.textAnchor "start"
-                ]
-                [ Svg.text material.name
-                ]
+            [ Svg.text material.name
             ]
-            |> html
-    , width = Element.fill
-    , view = renderDot material
-    }
+        ]
 
 
 gridView : Model -> Element.Element Msg
@@ -995,31 +1003,34 @@ gridView model =
             model
 
         sortedMaterials =
-            mod.materials
-                |> List.filter (\ingredient -> ingredient.t == Spirit || ingredient.t == Liqueur || ingredient.t == Fortified || ingredient.t == Base)
-                |> List.sortBy (\ingredient -> -(recipesWithIngredient False model.recipes ingredient))
+            List.concatMap (\{ materials } -> materials) mod.countedMaterials
+                |> List.map (\( _, _, material ) -> material)
     in
-    el
-        [ paddingEach
-            { top = 40
-            , right = 0
-            , left = 10
-            , bottom = 0
-            }
+    Html.table
+        [ Html.Attributes.class "grid"
         ]
-        (Element.table []
-            { data = model.recipes
-            , columns =
-                { header = el [ padding 10 ] (Element.text "")
-                , width = Element.fill
-                , view =
-                    \row ->
-                        el [ padding 10, bold ]
-                            (Element.text row.name)
-                }
-                    :: List.map getColumn sortedMaterials
-            }
-        )
+        [ Html.thead []
+            (Html.th []
+                [ Html.text ""
+                ]
+                :: List.map
+                    (\ingredient -> Html.th [] [ getColumn ingredient ])
+                    sortedMaterials
+            )
+        , Html.tbody []
+            (List.map
+                (\recipe ->
+                    Html.tr []
+                        (Html.th [] [ Html.text recipe.name ]
+                            :: List.map
+                                (\material -> Html.td [] [ renderDot material recipe ])
+                                sortedMaterials
+                        )
+                )
+                model.recipes
+            )
+        ]
+        |> html
 
 
 view : Model -> Html Msg
@@ -1055,7 +1066,7 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listMaterials model.dark model.pedantic model.countedMaterials
+                        [ listMaterials model.pedantic model.countedMaterials
                         ]
                     , column
                         [ alignTop
