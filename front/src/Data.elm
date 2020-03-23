@@ -15,6 +15,7 @@ type
     | Fruit
     | Juice
     | Seasoning -- Salt, herbs, spices.
+    | Soda -- Cola, ginger beer, etc.
     | Syrup
     | Other
 
@@ -117,7 +118,7 @@ water =
 
 sodaWater : Material
 sodaWater =
-    material "Soda water" Other
+    material "Soda water" Soda
 
 
 gin : Material
@@ -386,7 +387,7 @@ vanillaExtract =
 
 cola : Material
 cola =
-    material "Cola" Other
+    material "Cola" Soda
 
 
 nutmeg : Material
@@ -406,12 +407,12 @@ vodka =
 
 gingerBeer : Material
 gingerBeer =
-    material "Ginger beer" Other
+    material "Ginger beer" Soda
 
 
 gingerAle : Material
 gingerAle =
-    material "Ginger ale" Other
+    material "Ginger ale" Soda
 
 
 prosecco : Material
@@ -456,7 +457,7 @@ amaretto =
 
 olive : Material
 olive =
-    material "Olive" Other
+    material "Olive" Fruit
 
 
 wine : Material
@@ -617,6 +618,101 @@ celery =
 greenChartreuse : Material
 greenChartreuse =
     material "Green Chartreuse" Liqueur
+
+
+cremeDeViolette : Material
+cremeDeViolette =
+    material "Crème de violette" Liqueur
+
+
+aguardiente : Material
+aguardiente =
+    material "Aguardiente" Spirit
+
+
+honeySyrup : Material
+honeySyrup =
+    material "Honey syrup" Syrup
+
+
+honey : Material
+honey =
+    material "Honey" Other
+
+
+grapefruitSoda : Material
+grapefruitSoda =
+    material "Grapefruit soda" Soda
+
+
+amaroNonino : Material
+amaroNonino =
+    material "Amaro Nonino" Liqueur
+
+
+blendedScotchWhiskey : Material
+blendedScotchWhiskey =
+    material3 "Blended Scotch whiskey" Spirit whiskey
+
+
+islaySingleMaltScotch : Material
+islaySingleMaltScotch =
+    material3 "Islay Single Malt Scotch whiskey" Spirit whiskey
+
+
+ginger : Material
+ginger =
+    material "Ginger" Other
+
+
+candiedGinger : Material
+candiedGinger =
+    material "Candied ginger" Other
+
+
+elderflowerSyrup : Material
+elderflowerSyrup =
+    material "Elderflower syrup" Syrup
+
+
+grappa : Material
+grappa =
+    material "Grappa" Spirit
+
+
+whiteGrape : Material
+whiteGrape =
+    material "White grape" Fruit
+
+
+mezcal : Material
+mezcal =
+    material "Mezcal" Spirit
+
+
+overproofWhiteRum : Material
+overproofWhiteRum =
+    material3 "Overproof white rum" Spirit rum
+
+
+yellowChartreuse : Material
+yellowChartreuse =
+    material "Yellow Chartreuse" Liqueur
+
+
+redWine : Material
+redWine =
+    material3 "Red wine" Base wine
+
+
+redChiliPepper : Material
+redChiliPepper =
+    material "Red chili pepper" Fruit
+
+
+chamomileSyrup : Material
+chamomileSyrup =
+    material "Chamomile syrup" Syrup
 
 
 type alias Recipe =
@@ -875,6 +971,7 @@ recipes =
             [ { material = gin, quantity = CL 4.5 }
             , { material = lemonJuice, quantity = CL 1.5 }
             , { material = maraschino, quantity = CL 1.5 }
+            , { material = cremeDeViolette, quantity = Tsp 1 }
             , { material = cherry, quantity = Whole 1 }
             ]
       , description = """Add all ingredients into cocktail shaker filled with ice. Shake well and strain into cocktail glass. Garnish with a cherry."""
@@ -1029,7 +1126,7 @@ recipes =
 
     -- https://en.wikipedia.org/wiki/Monkey_Gland
     -- https://iba-world.com/iba-official-cocktails/monkey-gland/
-    , { name = "Monkey Gland"
+    , { name = "Monkey gland"
       , ingredients =
             [ { material = gin, quantity = CL 5 }
             , { material = oj, quantity = CL 3 }
@@ -1302,7 +1399,7 @@ recipes =
             [ { material = dryWhiteWine, quantity = CL 9 }
             , { material = cremeDeCassis, quantity = CL 1 }
             ]
-      , description = """Pour Crème de Cassis into glass, top up with white wine."""
+      , description = """Pour Crème de Cassis into glass, top up with white wine."""
       , glass = Wine
       }
     , { name = "Kir royal"
@@ -1310,7 +1407,7 @@ recipes =
             [ { material = champagne, quantity = CL 9 }
             , { material = cremeDeCassis, quantity = CL 1 }
             ]
-      , description = """Pour Crème de Cassis into glass, top up with Champagne."""
+      , description = """Pour Crème de Cassis into glass, top up with Champagne."""
       , glass = Wine
       }
 
@@ -1612,19 +1709,6 @@ recipes =
       }
 
     -- https://en.wikipedia.org/wiki/Spritz_Veneziano
-    -- https://iba-world.com/new-era-drinks/spritz-veneziano/
-    , { name = "Spritz Veneziano"
-      , ingredients =
-            [ { material = prosecco, quantity = CL 6 }
-            , { material = aperol, quantity = CL 4 }
-            , { material = sodaWater, quantity = Splash 1 }
-            , { material = orange, quantity = Slice 0.5 }
-            ]
-      , description = """Build into an old-fashioned glass filled with ice. Top with a splash of soda water. Garnish with half orange slice."""
-      , glass = OldFashioned
-      }
-
-    -- https://en.wikipedia.org/wiki/Spritz_Veneziano
     -- https://iba-world.com/cocktails/tequila-sunrise/
     , { name = "Tequila sunrise"
       , ingredients =
@@ -1740,5 +1824,232 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with orange zest and maraschino cherry."""
       , glass = Cocktail
+      }
+
+    -- https://en.wikipedia.org/wiki/Bee's_Knees_(cocktail)
+    -- https://iba-world.com/new-era-drinks/bees-knees/
+    , { name = "Bee’s nees"
+      , ingredients =
+            [ { material = londonDryGin, quantity = CL 5.25 } -- Just “dry gin”
+            , { material = honeySyrup, quantity = Tsp 2 }
+            , { material = lemonJuice, quantity = CL 2.25 }
+            , { material = oj, quantity = CL 2.25 }
+            , { material = orange, quantity = Custom "zest" }
+            ]
+      , description = """Stir honey with lemon and orange juices until it dissolves, add gin and shake with ice. Strain into a chilled cocktail glass. Optionally garnish with a lemon or orange zest."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/news/cachanchara/
+    , { name = "Cachanchara"
+      , ingredients =
+            [ { material = aguardiente, quantity = CL 6 } -- “Cuban Aguardiente”, rum like?
+            , { material = lemonJuice, quantity = CL 1.5 }
+            , { material = honey, quantity = CL 1.5 }
+            , { material = water, quantity = CL 5 }
+            , { material = lime, quantity = Wedge 1 }
+            ]
+      , description = """Mix honey with water and lime juice and spread the mixture on the bottom and sides of the glass. Add cracked ice, and then the rum. End by energetically stirring from bottom to top. Garnish with Lime wedge."""
+      , glass = OldFashioned
+      }
+
+    -- https://iba-world.com/new-era-drinks/fernandito/
+    , { name = "Fernandito"
+      , ingredients =
+            [ { material = fernetBranca, quantity = CL 5 }
+            , { material = cola, quantity = None }
+            ]
+      , description = """Pour the Fernet Branca into a double old fashioned glass with ice, fill the glass up with Cola. Gently stir."""
+      , glass = Highball -- Double old fashioned?
+      }
+
+    -- https://iba-world.com/new-era-drinks/old-cuban/
+    , { name = "Old cuban"
+      , ingredients =
+            [ { material = rum, quantity = CL 4.5 } -- “Aged rum”
+            , { material = sparklingWine, quantity = CL 6 } -- “Brut champagne or prosecco”
+            , { material = limeJuice, quantity = CL 2.25 }
+            , { material = simpleSyrup, quantity = CL 3 }
+            , { material = angosturaBitters, quantity = Dash 2 }
+            , { material = mint, quantity = Sprig 3 }
+            ]
+      , description = """Pour all ingredients into cocktail shaker except the wine, shake well with ice, strain into chilled elegant cocktail glass. Top up with the sparkling wine. Garnish with mint springs."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/paloma/
+    , { name = "Paloma"
+      , ingredients =
+            [ { material = tequila, quantity = CL 5 } -- “100% Agave Tequila”
+            , { material = grapefruitSoda, quantity = CL 10 } -- Pink Grapefruit Soda
+            , { material = limeJuice, quantity = Tsp 2 }
+            , { material = salt, quantity = None }
+            , { material = lime, quantity = Slice 1 }
+            ]
+      , description = """Poor the tequila into a highball glass, squeeze the lime juice. Add ice and salt, fill up pink grapefruit soda. Stir gently. Garnish with a slice of lime."""
+      , glass = Highball
+      }
+
+    -- https://iba-world.com/new-era-drinks/paper-plane/
+    , { name = "Paper plane"
+      , ingredients =
+            [ { material = bourbonWhiskey, quantity = CL 3 }
+            , { material = amaroNonino, quantity = CL 3 }
+            , { material = aperol, quantity = CL 3 }
+            , { material = lemonJuice, quantity = CL 3 }
+            ]
+      , description = """Pour all ingredients into cocktail shaker, shake well with ice, strain into chilled cocktail glass."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/penicillin/
+    , { name = "Penicillin"
+      , ingredients =
+            [ { material = blendedScotchWhiskey, quantity = CL 6 } -- “Blended Scotch Whisky”
+            , { material = islaySingleMaltScotch, quantity = CL 0.75 } -- “Lagavulin 16y”
+            , { material = lemonJuice, quantity = CL 2.25 }
+            , { material = honeySyrup, quantity = CL 2.25 }
+            , { material = ginger, quantity = Slice 3 }
+            , { material = candiedGinger, quantity = Whole 1 }
+            ]
+      , description = """Muddle fresh ginger in a shaker and add the remaining ingredients, except for the Islay single malt whiskey. Fill the shaker with ice and shake. Double-strain into a chilled old fashioned glass with ice. Float the single malt whisky on top. Garnish with a candied ginger."""
+      , glass = OldFashioned
+      }
+
+    -- https://iba-world.com/new-era-drinks/southside/
+    , { name = "Southside"
+      , ingredients =
+            [ { material = londonDryGin, quantity = CL 6 }
+            , { material = lemonJuice, quantity = CL 3 }
+            , { material = simpleSyrup, quantity = CL 1.5 }
+            , { material = mint, quantity = Sprig 2 }
+            , { material = eggWhite, quantity = CL 3 }
+            ]
+      , description = """Egg white optional. Pour all ingredients into a cocktail shaker, shake well with ice, double-strain into chilled cocktail glass. If egg white is used shake vigorously. Garnish with mint springs."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/spicy-fifty/
+    , { name = "Spicy fifty"
+      , ingredients =
+            [ { material = vodka, quantity = CL 5 }
+            , { material = elderflowerSyrup, quantity = CL 1.5 } -- “Elder flower cordial”
+            , { material = lemonJuice, quantity = CL 1.5 }
+            , { material = honeySyrup, quantity = CL 1 } -- “Monin Honey Syrup”
+            , { material = vanillaExtract, quantity = Drop 1 } -- “Vodka Vanilla” is used by IBA, so I instead added a drop of extract.
+            , { material = redChiliPepper, quantity = None }
+            ]
+      , description = """Pour all ingredients (including 2 thin slices of pepper) into a cocktail shaker, shake well with ice, double-strain into chilled cocktail glass. Garnish with a red chili pepper."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/suffering-bastard/
+    , { name = "Suffering bastard"
+      , ingredients =
+            [ { material = brandy, quantity = CL 3 }
+            , { material = gin, quantity = CL 3 }
+            , { material = limeJuice, quantity = CL 1.5 }
+            , { material = angosturaBitters, quantity = Dash 2 }
+            , { material = gingerBeer, quantity = None }
+            , { material = mint, quantity = Sprig 1 }
+            , { material = orange, quantity = Slice 1 }
+            ]
+      , description = """Pour all ingredients into cocktail shaker except the ginger beer, shake well with ice, Pour unstrained into a Collins glass or in the original S. Bastard mug and top up with ginger beer. Garnish with mint sprig and optionally an orange slice as well."""
+      , glass = Collins
+      }
+
+    -- https://iba-world.com/new-era-drinks/tipperary/
+    , { name = "Tipperary"
+      , ingredients =
+            [ { material = irishWhiskey, quantity = CL 5 }
+            , { material = sweetRedVermouth, quantity = CL 2.5 }
+            , { material = greenChartreuse, quantity = CL 1.5 }
+            , { material = angosturaBitters, quantity = Dash 2 }
+            , { material = orange, quantity = Slice 1 }
+            ]
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Garnish with a slice of orange."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/trinidad-sour/
+    , { name = "Trinidad sour"
+      , ingredients =
+            [ { material = angosturaBitters, quantity = CL 4.5 }
+            , { material = orgeatSyrup, quantity = CL 3 }
+            , { material = lemonJuice, quantity = CL 2.25 }
+            , { material = ryeWhiskey, quantity = CL 1.5 }
+            ]
+      , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/ve-n-to/
+    , { name = "Ve.n.to"
+      , ingredients =
+            [ { material = grappa, quantity = CL 4.5 } -- “White smooth grappa”
+            , { material = lemonJuice, quantity = CL 2.25 }
+            , { material = honeySyrup, quantity = CL 1.5 } -- “Honey mix”
+            , { material = chamomileSyrup, quantity = CL 1.5 } -- “Chamomile cordial”
+            , { material = honeySyrup, quantity = CL 1.5 } -- “Honey mix”
+            , { material = eggWhite, quantity = CL 3 }
+            , { material = lemon, quantity = Custom "zest" }
+            , { material = whiteGrape, quantity = Whole 3 }
+            ]
+      , description = """Egg white optional. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled small tumbler glass filled with ice. Garnish with lemon zest and white grapes."""
+      , glass = OldFashioned
+      }
+
+    -- https://iba-world.com/new-era-drinks/illegal/
+    , { name = "Illegal"
+      , ingredients =
+            [ { material = mezcal, quantity = CL 3 } -- “Espadin Mezcal”
+            , { material = overproofWhiteRum, quantity = CL 1.5 } -- “Jamaica Overproof White Rum”
+            , { material = limeJuice, quantity = CL 2.25 }
+            , { material = falernum, quantity = CL 1.5 }
+            , { material = simpleSyrup, quantity = CL 1.5 }
+            , { material = maraschino, quantity = Tsp 1 }
+            , { material = eggWhite, quantity = CL 3 }
+            ]
+      , description = """Egg white optional. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled cocktail glass, or “on the rocks” in a traditional clay or terracotta mug."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/naked-and-famous/
+    , { name = "Naked and famous"
+      , ingredients =
+            [ { material = mezcal, quantity = CL 2.25 }
+            , { material = yellowChartreuse, quantity = CL 2.25 }
+            , { material = aperol, quantity = CL 2.25 }
+            , { material = limeJuice, quantity = CL 2.25 }
+            ]
+      , description = """Pour all ingredients into cocktail shaker, shake well with ice, strain into chilled cocktail glass."""
+      , glass = Cocktail
+      }
+
+    -- https://iba-world.com/new-era-drinks/new-york-sour/
+    , { name = "New York sour"
+      , ingredients =
+            [ { material = ryeWhiskey, quantity = CL 6 } -- Or bourbon
+            , { material = lemonJuice, quantity = CL 3 }
+            , { material = eggWhite, quantity = CL 3 }
+            , { material = simpleSyrup, quantity = CL 2.25 }
+            , { material = redWine, quantity = CL 1.5 } -- “Shiraz or Malbech”
+            , { material = lemon, quantity = Custom "zest" }
+            , { material = cherry, quantity = Whole 1 }
+            ]
+      , description = """Bourbon can be used instead of rye. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled rocks glass filled with ice. Float the wine on top. Garnish with lemon or orange zest with cherry."""
+      , glass = OldFashioned
+      }
+
+    -- https://iba-world.com/new-era-drinks/spritz/
+    , { name = "Spritz"
+      , ingredients =
+            [ { material = prosecco, quantity = CL 9 }
+            , { material = aperol, quantity = CL 6 }
+            , { material = sodaWater, quantity = Splash 1 }
+            , { material = orange, quantity = Slice 1 }
+            ]
+      , description = """Build all ingredients into a wine glass filled with ice. Stir gently. Garnish with a slice of orange."""
+      , glass = Wine
       }
     ]
