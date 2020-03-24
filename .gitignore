@@ -2,3 +2,5 @@ elm-stuff
 node_modules
 ./public
 .DS_Store
+
+.now

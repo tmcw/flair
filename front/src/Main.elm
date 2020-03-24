@@ -3,7 +3,7 @@ port module Main exposing (Msg(..), main, setDark, update, view)
 import Browser
 import Browser.Events
 import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
-import Element exposing (Element, alignTop, centerX, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
+import Element exposing (Element, alignTop, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
 import Element.Events exposing (onClick)
@@ -13,8 +13,11 @@ import Element.Region
 import Html exposing (Html, label, option, select)
 import Html.Attributes exposing (value)
 import Html.Events
-import Json.Decode as Decode
+import Http
+import Json.Decode as Decode exposing (Decoder, bool, field, string)
+import Json.Encode as Encode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
+import Set
 import Set.Any exposing (AnySet)
 import Svg exposing (path, svg)
 import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width)
@@ -58,6 +61,9 @@ type alias Model =
     , pedantic : Bool
     , sort : Sort
     , dark : Bool
+    , email : String
+    , syncing : Bool
+    , sentEmail : Bool
     , countedMaterials : List MaterialsGroup
     }
 
@@ -73,6 +79,11 @@ type Msg
     | MoveUp
     | MoveDown
     | Ignored
+    | GotOk (Result Http.Error Bool)
+    | GotMagic (Result Http.Error Bool)
+    | GotInventory (Result Http.Error (List String))
+    | GetMagicLink
+    | SetEmail String
 
 
 
@@ -152,11 +163,6 @@ blue =
 lightBlue : Element.Color
 lightBlue =
     Element.rgb255 129 127 224
-
-
-clear : Element.Color
-clear =
-    Element.rgba255 0 0 0 0
 
 
 edges : { top : Int, right : Int, bottom : Int, left : Int }
@@ -249,17 +255,17 @@ update msg model =
             , Cmd.none
             )
 
-        ToggleIngredient ingredient checked ->
+        ToggleIngredient material checked ->
             ( { model
                 | availableMaterials =
                     if checked then
-                        Set.Any.insert ingredient model.availableMaterials
+                        Set.Any.insert material model.availableMaterials
 
                     else
-                        Set.Any.remove ingredient model.availableMaterials
+                        Set.Any.remove material model.availableMaterials
               }
                 |> deriveMaterials
-            , Cmd.none
+            , saveMaterial material.name checked
             )
 
         SetMode mode ->
@@ -274,13 +280,102 @@ update msg model =
         SetDark on ->
             ( { model | dark = on }, setDark on )
 
+        SetEmail e ->
+            ( { model | email = e }, Cmd.none )
+
         Ignored ->
+            ( model, Cmd.none )
+
+        GetMagicLink ->
+            ( { model | email = "" }, getMagicLink model.email )
+
+        GotInventory result ->
+            case result of
+                Ok inventory ->
+                    let
+                        inventorySet =
+                            Set.fromList inventory
+                    in
+                    ( { model
+                        | availableMaterials =
+                            List.filter
+                                (\m ->
+                                    Set.member
+                                        m.name
+                                        inventorySet
+                                )
+                                model.materials
+                                |> Set.Any.fromList materialKey
+                        , syncing = True
+                      }
+                        |> deriveMaterials
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( { model
+                        | syncing = False
+                      }
+                    , Cmd.none
+                    )
+
+        GotMagic _ ->
+            ( { model | sentEmail = True }, Cmd.none )
+
+        GotOk _ ->
             ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Browser.Events.onKeyDown keyDecoder
+
+
+okDecoder : Decoder Bool
+okDecoder =
+    field "ok" bool
+
+
+inventoryDecoder : Decoder (List String)
+inventoryDecoder =
+    Decode.list string
+
+
+saveMaterial : String -> Bool -> Cmd Msg
+saveMaterial material add =
+    Http.post
+        { url = "/api/store"
+        , body =
+            Http.jsonBody
+                (Encode.object
+                    [ ( "material", Encode.string material )
+                    , ( "add", Encode.bool add )
+                    ]
+                )
+        , expect = Http.expectJson GotOk okDecoder
+        }
+
+
+getMagicLink : String -> Cmd Msg
+getMagicLink email =
+    Http.post
+        { url = "/api/signin"
+        , body =
+            Http.jsonBody
+                (Encode.object
+                    [ ( "email", Encode.string email )
+                    ]
+                )
+        , expect = Http.expectJson GotMagic okDecoder
+        }
+
+
+loadInventory : Cmd Msg
+loadInventory =
+    Http.get
+        { url = "/api/inventory"
+        , expect = Http.expectJson GotInventory inventoryDecoder
+        }
 
 
 init : ( Model, Cmd Msg )
@@ -295,9 +390,12 @@ init =
       , pedantic = True
       , sort = Feasibility
       , dark = False
+      , syncing = False
+      , sentEmail = False
+      , email = ""
       }
         |> deriveMaterials
-    , Cmd.none
+    , loadInventory
     )
 
 
@@ -530,10 +628,12 @@ checkboxIconX x checked =
         |> html
 
 
+checkboxIcon : Bool -> Element Msg
 checkboxIcon =
     checkboxIconX 12
 
 
+checkboxIconL : Bool -> Element Msg
 checkboxIconL =
     checkboxIconX 14
 
@@ -1066,8 +1166,58 @@ view model =
                         , Element.width
                             Element.shrink
                         ]
-                        [ listMaterials model.pedantic model.countedMaterials
-                        ]
+                        (listMaterials model.pedantic model.countedMaterials
+                            :: (if model.syncing then
+                                    [ Element.el
+                                        [ paddingEach { edges | top = 30 }
+                                        ]
+                                        (Element.link
+                                            [ Font.color
+                                                (if model.dark then
+                                                    lightBlue
+
+                                                 else
+                                                    blue
+                                                )
+                                            ]
+                                            { url = "/api/signout", label = text "Sign out" }
+                                        )
+                                    ]
+
+                                else if model.sentEmail then
+                                    [ paragraph
+                                        [ paddingEach { edges | bottom = 10, top = 30 }
+                                        ]
+                                        [ el [] (text "Check your email!") ]
+                                    ]
+
+                                else
+                                    [ Element.column
+                                        [ paddingEach { edges | top = 30 }
+                                        , spacing 5
+                                        ]
+                                        [ paragraph
+                                            [ paddingEach { edges | bottom = 10 }
+                                            ]
+                                            [ el [] (text "Sign in to save your ingredients") ]
+                                        , Input.text
+                                            []
+                                            { onChange = \email -> SetEmail email
+                                            , text = model.email
+                                            , placeholder = Just (Input.placeholder [] (text "Email"))
+                                            , label = Input.labelHidden "Email"
+                                            }
+                                        , Input.button
+                                            [ Font.center
+                                            , Element.width Element.fill
+                                            ]
+                                            { onPress = Just GetMagicLink
+                                            , label = text "GET LINK"
+                                            }
+                                        ]
+                                    ]
+                               )
+                        )
                     , column
                         [ alignTop
                         , padding 20
