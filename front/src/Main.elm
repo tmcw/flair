@@ -3,7 +3,7 @@ port module Main exposing (Msg(..), main, setDark, update, view)
 import Browser
 import Browser.Events
 import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
-import Element exposing (Element, alignTop, centerX, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
+import Element exposing (Element, alignTop, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
 import Element.Events exposing (onClick)
@@ -17,7 +17,7 @@ import Http
 import Json.Decode as Decode exposing (Decoder, bool, field, string)
 import Json.Encode as Encode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
-import Set exposing (Set)
+import Set
 import Set.Any exposing (AnySet)
 import Svg exposing (path, svg)
 import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width)
@@ -163,11 +163,6 @@ blue =
 lightBlue : Element.Color
 lightBlue =
     Element.rgb255 129 127 224
-
-
-clear : Element.Color
-clear =
-    Element.rgba255 0 0 0 0
 
 
 edges : { top : Int, right : Int, bottom : Int, left : Int }
@@ -633,10 +628,12 @@ checkboxIconX x checked =
         |> html
 
 
+checkboxIcon : Bool -> Element Msg
 checkboxIcon =
     checkboxIconX 12
 
 
+checkboxIconL : Bool -> Element Msg
 checkboxIconL =
     checkboxIconX 14
 
