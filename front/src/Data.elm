@@ -349,7 +349,7 @@ eggWhite =
 
 champagne : Material
 champagne =
-    material "Champagne" Base
+    material3 "Champagne" Base sparklingWine
 
 
 tequila : Material
@@ -449,7 +449,7 @@ gingerAle =
 
 prosecco : Material
 prosecco =
-    material "Prosecco" Base
+    material3 "Prosecco" Base sparklingWine
 
 
 mint : Material
@@ -504,7 +504,7 @@ dryWhiteWine =
 
 sparklingWine : Material
 sparklingWine =
-    material3 "Sparkling wine" Base wine
+    material "Sparkling wine" Base
 
 
 peachSchnapps : Material
