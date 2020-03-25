@@ -232,6 +232,11 @@ blackberry =
     material "Blackberry" Fruit
 
 
+raspberry : Material
+raspberry =
+    material "Raspberry" Fruit
+
+
 cherry : Material
 cherry =
     material "Cherry" Fruit
@@ -260,6 +265,21 @@ cognac =
 tripleSec : Material
 tripleSec =
     material "Triple sec" Liqueur
+
+
+grandMarnier : Material
+grandMarnier =
+    material3 "Grand Marnier" Liqueur tripleSec
+
+
+cointreau : Material
+cointreau =
+    material3 "Cointreau" Liqueur tripleSec
+
+
+curacao : Material
+curacao =
+    material3 "Curaçao" Liqueur tripleSec
 
 
 grenadine : Material
@@ -1043,8 +1063,9 @@ recipes =
             , ingredient lemonJuice (CL 1.5)
             , ingredient raspberrySyrup (CL 1.5)
             , ingredient eggWhite FewDrops
+            , ingredient raspberry (Whole 2)
             ]
-      , description = """Pour all ingredients into cocktail shaker filled with ice. Shake well. Strain into cocktail glass."""
+      , description = """Pour all ingredients into cocktail shaker filled with ice. Shake well. Strain into cocktail glass. Garnish with fresh raspberries."""
       , glass = Cocktail
       }
 
@@ -1402,7 +1423,7 @@ recipes =
             , ingredient cognac (CL 1)
             , ingredient angosturaBitters (Dash 2)
             , ingredient sugar (Cube 1)
-            , optionalIngredient tripleSec FewDrops
+            , optionalIngredient grandMarnier FewDrops
             , ingredient orange (Custom "zest")
             , ingredient cherry (Whole 1)
             ]
@@ -1435,7 +1456,7 @@ recipes =
             , ingredient tequila (CL 1.5)
             , ingredient whiteRum (CL 1.5)
             , ingredient gin (CL 1.5)
-            , ingredient tripleSec (CL 1.5)
+            , ingredient cointreau (CL 1.5)
             , ingredient lemonJuice (CL 2.5)
             , ingredient simpleSyrup (CL 3)
             , ingredient cola None
@@ -1451,7 +1472,7 @@ recipes =
       , ingredients =
             [ ingredient whiteRum (CL 3) -- “Amber Jamaican Rum”
             , ingredient darkRum (CL 3) -- “Martinique Molasses Rhum”
-            , ingredient tripleSec (CL 1.5) -- “Orange Curacao”
+            , ingredient curacao (CL 1.5)
             , ingredient orgeatSyrup (CL 1.5)
             , ingredient limeJuice (CL 3)
             , ingredient simpleSyrup (CL 0.75)
@@ -1515,7 +1536,7 @@ recipes =
     , { name = "Corpse reviver #2"
       , ingredients =
             [ ingredient gin (CL 3)
-            , ingredient tripleSec (CL 3) -- Cointreau
+            , ingredient cointreau (CL 3)
             , ingredient lilletBlanc (CL 3)
             , ingredient lemonJuice (CL 3)
             , ingredient absinthe (Dash 1)
@@ -1529,7 +1550,7 @@ recipes =
     , { name = "Cosmopolitan"
       , ingredients =
             [ ingredient vodka (CL 4) -- Vodka citron
-            , ingredient tripleSec (CL 1.5) -- Cointreau
+            , ingredient cointreau (CL 1.5)
             , ingredient limeJuice (CL 1.5)
             , ingredient cranberryJuice (CL 3)
             , ingredient lemon (Custom "twist")
@@ -1712,7 +1733,7 @@ recipes =
       , ingredients =
             [ ingredient gin (CL 3)
             , ingredient cherryLiqueur (CL 1.5)
-            , ingredient tripleSec (CL 0.75) -- Cointreau
+            , ingredient cointreau (CL 0.75)
             , ingredient domBenedictine (CL 0.75)
             , ingredient pineappleJuice (CL 12)
             , ingredient limeJuice (CL 1.5)
@@ -1778,7 +1799,7 @@ recipes =
             [ ingredient brandy (CL 5.25)
             , ingredient lemonJuice (CL 1.5)
             , ingredient maraschino (CL 0.75)
-            , ingredient tripleSec (Tsp 1)
+            , ingredient curacao (Tsp 1)
             , ingredient simpleSyrup (Tsp 1)
             , ingredient aromaticBitters (Dash 2)
             , ingredient orange (Slice 1)
