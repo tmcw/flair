@@ -800,7 +800,7 @@ recipes =
       , ingredients =
             [ ingredient champagne (CL 7.5)
             , ingredient oj (CL 7.5)
-            , ingredient orange (Custom "twist")
+            , optionalIngredient orange (Custom "twist")
             ]
       , description = """Ensure both ingredients are well chilled, then mix into the glass. Garnish with orange twist (optional)."""
       , glass = ChampagneFlute
@@ -1325,7 +1325,7 @@ recipes =
             [ ingredient bourbonWhiskey (CL 4.5)
             , ingredient lemonJuice (CL 3)
             , ingredient simpleSyrup (CL 1.5)
-            , ingredient eggWhite (Dash 1)
+            , optionalIngredient eggWhite (Dash 1)
             , ingredient cherry (Whole 1)
             , ingredient orange (Slice 0.5)
             ]
@@ -1469,7 +1469,7 @@ recipes =
             [ ingredient tequila (CL 5)
             , ingredient tripleSec (CL 2)
             , ingredient limeJuice (CL 1.5)
-            , ingredient salt None
+            , optionalIngredient salt None
             ]
       , description = """Add all ingredients into a shaker with ice. Shake and strain into a chilled cocktail glass. Garnish with a half salt rim (optional)."""
       , glass = Margarita
@@ -1580,9 +1580,9 @@ recipes =
             [ ingredient whiteCremeDeCacao (CL 2)
             , ingredient greenCremeDeMenthe (CL 2)
             , ingredient cream (CL 2)
-            , ingredient mint (Custom "1 leave")
+            , optionalIngredient mint (Custom "1 leave")
             ]
-      , description = """Pour all ingredients into shaker filled with ice. Shake briskly for few seconds. Strain into chilled cocktail glass. Garnish with mint leave (optional)."""
+      , description = """Pour all ingredients into shaker filled with ice. Shake briskly for few seconds. Strain into chilled cocktail glass. Garnish with mint leaf (optional)."""
       , glass = Cocktail
       }
 
@@ -1940,7 +1940,7 @@ recipes =
             , ingredient lemonJuice (CL 3)
             , ingredient simpleSyrup (CL 1.5)
             , ingredient mint (Sprig 2)
-            , ingredient eggWhite (CL 3)
+            , optionalIngredient eggWhite (CL 3)
             ]
       , description = """Egg white optional. Pour all ingredients into a cocktail shaker, shake well with ice, double-strain into chilled cocktail glass. If egg white is used shake vigorously. Garnish with mint springs."""
       , glass = Cocktail
@@ -1969,7 +1969,7 @@ recipes =
             , ingredient angosturaBitters (Dash 2)
             , ingredient gingerBeer None
             , ingredient mint (Sprig 1)
-            , ingredient orange (Slice 1)
+            , optionalIngredient orange (Slice 1)
             ]
       , description = """Pour all ingredients into cocktail shaker except the ginger beer, shake well with ice, Pour unstrained into a Collins glass or in the original S. Bastard mug and top up with ginger beer. Garnish with mint sprig and optionally an orange slice as well."""
       , glass = Collins
@@ -2008,7 +2008,7 @@ recipes =
             , ingredient honeySyrup (CL 1.5) -- “Honey mix”
             , ingredient chamomileSyrup (CL 1.5) -- “Chamomile cordial”
             , ingredient honeySyrup (CL 1.5) -- “Honey mix”
-            , ingredient eggWhite (CL 3)
+            , optionalIngredient eggWhite (CL 3)
             , ingredient lemon (Custom "zest")
             , ingredient whiteGrape (Whole 3)
             ]
@@ -2025,7 +2025,7 @@ recipes =
             , ingredient falernum (CL 1.5)
             , ingredient simpleSyrup (CL 1.5)
             , ingredient maraschino (Tsp 1)
-            , ingredient eggWhite (CL 3)
+            , optionalIngredient eggWhite (CL 3)
             ]
       , description = """Egg white optional. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled cocktail glass, or “on the rocks” in a traditional clay or terracotta mug."""
       , glass = Cocktail
