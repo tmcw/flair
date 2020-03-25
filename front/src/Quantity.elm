@@ -24,41 +24,94 @@ type Units
     | Oz
 
 
+formatInteger : Float -> String
+formatInteger d =
+    if floor d == 0 then
+        ""
+    else
+      String.fromInt (floor d)
+
+
+-- Expects number between 0 and 100, floored.
+formatFractional : Float -> String
+formatFractional d =
+    if d == 0 then
+        ""
+    else if d == 10 then
+        "⅒"
+    else if d == 11 then
+        "⅑"
+    else if d == 12 then
+        "⅛"
+    else if d == 14 then
+        "⅐"
+    else if d == 16 then
+        "⅙"
+    else if d == 20 then
+        "⅕"
+    else if d == 25 then
+        "¼"
+    else if d == 33 then
+        "⅓"
+    else if d == 37 then
+        "⅜"
+    else if d == 40 then
+        "⅖"
+    else if d == 50 then
+        "½"
+    else if d == 60 then
+        "⅗"
+    else if d == 62 then
+        "⅝"
+    else if d == 66 then
+        "⅔"
+    else if d == 75 then
+        "¾"
+    else if d == 80 then
+        "⅘"
+    else if d == 83 then
+        "⅚"
+    else if d == 87 then
+        "⅞"
+    else
+        "." ++ String.fromFloat d
+
+
+formatFloat : Float -> String
+formatFloat d =
+    formatInteger d ++ formatFractional ( toFloat ( floor ( ( d - toFloat ( floor d ) ) * 100 ) ) )
+
+
+plural : String -> String -> Int -> String
+plural word suffix d =
+    if d == 1 then
+        word
+    else
+        word ++ suffix
+
+
 printQuantity : Units -> Quantity -> String
 printQuantity units quantity =
     case quantity of
         CL a ->
             case units of
                 Cl ->
-                    String.fromFloat a ++ " Cl"
+                    formatFloat a ++ " Cl"
 
                 Ml ->
-                    String.fromFloat (a * 10) ++ " Ml"
+                    formatFloat (a * 10) ++ " Ml"
 
                 Oz ->
-                    String.fromFloat (toFloat (floor (a * 0.3519503 * 100)) / 100) ++ " Oz"
+                    formatFloat (a * 1 / 3) ++ " Oz"
 
         Cube a ->
-            if a == 1 then
-                "1 cube"
-
-            else
-                String.fromInt a ++ " cube"
-
+            String.fromInt a ++ plural " cube" "s" a
 
         Dash a ->
-            if a == 1 then
-                "1 dash"
-
-            else
-                String.fromInt a ++ " dashes"
+            String.fromInt a ++ plural " dash" "es" a
 
         Drop a ->
-            if a == 1 then
-                "1 drop"
-
-            else
-                String.fromInt a ++ " drops"
+            String.fromInt a ++ plural " drop" "s" a
 
         FewDrops ->
             "Few drops"
@@ -67,38 +120,19 @@ printQuantity units quantity =
             "Few dashes"
 
         Slice a ->
-            if a == 0.5 then
-                "Half slice"
-
-            else if a == 1 then
-                "1 slice"
-
-            else
-                String.fromFloat a ++ " slices"
+            formatFloat a ++ plural " slice" "s" ( floor a )
 
         Splash a ->
-            if a == 1 then
-                "Splash"
-
-            else
-                String.fromInt a ++ " splashes"
+            String.fromInt a ++ plural " splash" "es" a
 
         Sprig a ->
-            if a == 1 then
-                "1 sprig"
-
-            else
-                String.fromInt a ++ " sprigs"
+            String.fromInt a ++ plural " sprig" "s" a
 
         Tsp a ->
-            String.fromFloat a ++ " Tsp"
+            formatFloat a ++ " Tsp"
 
         Wedge a ->
-            if a == 1 then
-                "1 wedge"
-
-            else
-                String.fromInt a ++ " wedges"
+            String.fromInt a ++ plural " wedge" "s" a
 
         Whole a ->
             String.fromInt a
