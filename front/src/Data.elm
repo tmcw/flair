@@ -414,7 +414,7 @@ orangeFlowerWater =
 
 vanillaExtract : Material
 vanillaExtract =
-    material "Vanilla extract" Other
+    material "Vanilla extract" Bitters
 
 
 cola : Material
