@@ -569,7 +569,7 @@ sugar =
 
 simpleSyrup : Material
 simpleSyrup =
-    material3 "Simple syrup" Syrup sugar
+    material "Simple syrup" Syrup
 
 
 caneSugar : Material
