@@ -322,11 +322,6 @@ fernetBranca =
     material "Fernet Branca" Liqueur
 
 
-gommeSyrup : Material
-gommeSyrup =
-    material "Gomme syrup" Syrup
-
-
 raspberrySyrup : Material
 raspberrySyrup =
     material "Raspberry syrup" Syrup
@@ -1112,7 +1107,7 @@ recipes =
       , ingredients =
             [ ingredient gin (CL 4.5)
             , ingredient lemonJuice (CL 3)
-            , ingredient gommeSyrup (CL 1)
+            , ingredient simpleSyrup (CL 1)
             , ingredient sodaWater (CL 8)
             , ingredient lemon (Slice 1)
             ]
