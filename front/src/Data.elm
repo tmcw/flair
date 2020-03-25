@@ -254,7 +254,7 @@ dryVermouth =
 
 cognac : Material
 cognac =
-    material "Cognac" Spirit
+    material3 "Cognac" Spirit brandy
 
 
 tripleSec : Material
@@ -574,7 +574,7 @@ galliano =
 
 pisco : Material
 pisco =
-    material "Pisco" Spirit
+    material3 "Pisco" Spirit brandy
 
 
 orgeatSyrup : Material
@@ -694,7 +694,7 @@ elderflowerSyrup =
 
 grappa : Material
 grappa =
-    material "Grappa" Spirit
+    material3 "Grappa" Spirit brandy
 
 
 whiteGrape : Material
