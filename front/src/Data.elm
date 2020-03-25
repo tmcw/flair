@@ -657,9 +657,9 @@ cremeDeViolette =
     material "Crème de violette" Liqueur
 
 
-aguardiente : Material
-aguardiente =
-    material "Aguardiente" Spirit
+cubanAguardiente : Material
+cubanAguardiente =
+    material3 "Cuban aguardiente" Spirit rum
 
 
 honeySyrup : Material
@@ -1876,7 +1876,7 @@ recipes =
     -- https://iba-world.com/news/cachanchara/
     , { name = "Cachanchara"
       , ingredients =
-            [ ingredient aguardiente (CL 6) -- “Cuban Aguardiente”, rum like?
+            [ ingredient cubanAguardiente (CL 6)
             , ingredient lemonJuice (CL 1.5)
             , ingredient honey (CL 1.5)
             , ingredient water (CL 5)
