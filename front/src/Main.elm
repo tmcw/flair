@@ -265,7 +265,11 @@ update msg model =
                         Set.Any.remove material model.availableMaterials
               }
                 |> deriveMaterials
-            , saveMaterial material.name checked
+            , if model.syncing then
+                saveMaterial material.name checked
+
+              else
+                Cmd.none
             )
 
         SetMode mode ->
@@ -536,9 +540,11 @@ aliasMaterial pedantic material =
 
 getMaterials : Bool -> Recipe -> MaterialSet
 getMaterials pedantic recipe =
-    List.map
-        (\ingredient -> aliasMaterial pedantic ingredient.material)
-        recipe.ingredients
+    recipe.ingredients
+        |> List.filter
+            (\ingredient -> not ingredient.optional)
+        |> List.map
+            (\ingredient -> aliasMaterial pedantic ingredient.material)
         |> Set.Any.fromList
             materialKey
 
@@ -821,6 +827,7 @@ recipeBlock model recipe =
             , el [ Font.italic, Font.underline ] (text recipe.name)
             ]
         , recipe.ingredients
+            |> List.filter (\ingredient -> not ingredient.optional)
             |> List.map
                 (listIngredientInBlock model)
             |> List.intersperse
@@ -883,6 +890,12 @@ displayRecipe model recipe =
                                 ++ " "
                                 ++ ingredient.material.name
                                 ++ replacement model.pedantic ingredient
+                                ++ (if ingredient.optional then
+                                        " (optional)"
+
+                                    else
+                                        ""
+                                   )
                             )
                         ]
                 )
