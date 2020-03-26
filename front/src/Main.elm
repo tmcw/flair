@@ -437,15 +437,20 @@ countMaterials model t =
 deriveMaterials : Model -> Model
 deriveMaterials model =
     let
+        recipesByGap =
+            List.map
+                (\recipe -> ( recipe, missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.size |> toFloat ))
+                model.recipes
+
         ( sufficient, unsortedInsufficient ) =
             List.partition
-                (\recipe -> missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.isEmpty)
-                model.recipes
+                (\( _, gapSize ) -> gapSize == 0)
+                recipesByGap
 
         insufficient =
             List.sortBy
-                (\recipe ->
-                    (missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.size |> toFloat)
+                (\( recipe, gapSize ) ->
+                    gapSize
                         / (List.length recipe.ingredients
                             |> toFloat
                           )
@@ -458,7 +463,9 @@ deriveMaterials model =
         orderedRecipes =
             case model.sort of
                 Feasibility ->
-                    sufficient ++ insufficient
+                    sufficient
+                        ++ insufficient
+                        |> List.map (\( recipe, _ ) -> recipe)
 
                 Alphabetical ->
                     alphabetical
@@ -542,7 +549,7 @@ getMaterials : Bool -> Recipe -> MaterialSet
 getMaterials pedantic recipe =
     recipe.ingredients
         |> List.filter
-            (\ingredient -> not ingredient.optional)
+            (\ingredient -> not ingredient.optional && (pedantic || (ingredient.material.t /= Fruit && ingredient.material.t /= Seasoning)))
         |> List.map
             (\ingredient -> aliasMaterial pedantic ingredient.material)
         |> Set.Any.fromList
