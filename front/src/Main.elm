@@ -893,9 +893,8 @@ displayRecipe model recipe =
                     paragraph []
                         [ text
                             ("◦ "
-                                ++ printQuantity model.units ingredient.quantity
+                                ++ printQuantity ingredient.material.name ingredient.quantity model.units
                                 ++ " "
-                                ++ ingredient.material.name
                                 ++ replacement model.pedantic ingredient
                                 ++ (if ingredient.optional then
                                         " (optional)"

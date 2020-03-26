@@ -90,55 +90,55 @@ plural word suffix d =
         word ++ suffix
 
 
-printQuantity : Units -> Quantity -> String
-printQuantity units quantity =
+printQuantity : String -> Quantity -> Units -> String
+printQuantity name quantity units =
     case quantity of
         CL a ->
             case units of
                 Cl ->
-                    formatFloat a ++ " Cl"
+                    formatFloat a ++ " Cl " ++ name
 
                 Ml ->
-                    formatFloat (a * 10) ++ " Ml"
+                    formatFloat (a * 10) ++ " Ml " ++ name
 
                 Oz ->
-                    formatFloat (a * 1 / 3) ++ " Oz"
+                    formatFloat (a * 1 / 3) ++ " Oz " ++ name
 
         Cube a ->
-            String.fromInt a ++ plural " cube" "s" a
+            name ++ ": " ++ String.fromInt a ++ plural " cube" "s" a
 
         Dash a ->
-            String.fromInt a ++ plural " dash" "es" a
+            name ++ ": " ++ String.fromInt a ++ plural " dash" "es" a
 
         Drop a ->
-            String.fromInt a ++ plural " drop" "s" a
+            name ++ ": " ++ String.fromInt a ++ plural " drop" "s" a
 
         FewDrops ->
-            "Few drops"
+            name ++ ": Few drops"
 
         FewDashes ->
-            "Few dashes"
+            name ++ ": Few dashes"
 
         Slice a ->
-            formatFloat a ++ plural " slice" "s" ( floor a )
+            name ++ ": " ++ formatFloat a ++ plural " slice" "s" ( floor a )
 
         Splash a ->
-            String.fromInt a ++ plural " splash" "es" a
+            name ++ ": " ++ String.fromInt a ++ plural " splash" "es" a
 
         Sprig a ->
-            String.fromInt a ++ plural " sprig" "s" a
+            name ++ ": " ++ String.fromInt a ++ plural " sprig" "s" a
 
         Tsp a ->
-            formatFloat a ++ " Tsp"
+            formatFloat a ++ " Tsp " ++ name
 
         Wedge a ->
-            String.fromInt a ++ plural " wedge" "s" a
+            name ++ ": " ++ String.fromInt a ++ plural " wedge" "s" a
 
         Whole a ->
-            String.fromInt a
+            name ++ ": " ++ String.fromInt a
 
         Custom str ->
-            str
+            name ++ ": " ++ str
 
         None ->
-            ""
+            name
