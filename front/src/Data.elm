@@ -1851,7 +1851,7 @@ recipes =
             , ingredient honeySyrup (Tsp 2)
             , ingredient lemonJuice (CL 2.25)
             , ingredient oj (CL 2.25)
-            , ingredient orange (Custom "zest")
+            , optionalIngredient orange (Custom "zest")
             ]
       , description = """Stir honey with lemon and orange juices until it dissolves, add gin and shake with ice. Strain into a chilled cocktail glass. Optionally garnish with a lemon or orange zest."""
       , glass = Cocktail
