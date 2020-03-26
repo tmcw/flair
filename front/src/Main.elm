@@ -1168,6 +1168,10 @@ view model =
             )
         , Font.family
             [ Font.typeface "IBM Plex Mono"
+            , Font.typeface "SFMono-Regular"
+            , Font.typeface "Consolas"
+            , Font.typeface "Liberation Mono"
+            , Font.typeface "Menlo"
             , Font.monospace
             ]
         ]
