@@ -935,7 +935,7 @@ recipes =
             , ingredient sweetRedVermouth (CL 3)
             , ingredient campari (CL 3)
             , ingredient orange (Custom "peel")
-            , ingredient cherry (Whole 1)
+            , optionalIngredient lemon (Custom "zest")
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with a orange zest, optionally a lemon zest."""
       , glass = OldFashioned
