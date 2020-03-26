@@ -892,7 +892,7 @@ displayRecipe model recipe =
                 (\ingredient ->
                     paragraph []
                         [ text
-                            ("◦ "
+                            ("- "
                                 ++ printQuantity ingredient.material.name ingredient.quantity model.units
                                 ++ " "
                                 ++ replacement model.pedantic ingredient
