@@ -1422,7 +1422,7 @@ recipes =
             , ingredient orange (Custom "zest")
             , ingredient cherry (Whole 1)
             ]
-      , description = """Place the sugar cube with 2 dashes of bitters in a large Champagne glass, add the cognac. Optionally add a few drops of triple sec. Pour gently chilled Champagne. Garnish with orange zest and cherry."""
+      , description = """Place the sugar cube with 2 dashes of bitters in a large Champagne glass, add the cognac. Optionally add a few drops of Grand Marnier. Pour gently chilled Champagne. Garnish with orange zest and cherry."""
       , glass = Cocktail
       }
 
