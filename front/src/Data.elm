@@ -1402,7 +1402,7 @@ recipes =
             , ingredient cognac (CL 1)
             , ingredient angosturaBitters (Dash 2)
             , ingredient sugar (Cube 1)
-            , ingredient tripleSec FewDrops -- Optional
+            , optionalIngredient tripleSec FewDrops
             , ingredient orange (Custom "zest")
             , ingredient cherry (Whole 1)
             ]
