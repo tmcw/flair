@@ -696,7 +696,7 @@ title : String -> Element.Element Msg
 title name =
     el
         [ bold
-        , paddingEach { edges | bottom = 5, top = 10 }
+        , paddingEach { edges | bottom = 5 }
         ]
         (text name)
 
@@ -706,20 +706,24 @@ listMaterials pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
-                title label
-                    :: List.map materialNavigationItem
-                        (if pedantic then
-                            List.filter
-                                (\( count, _, _ ) -> count > 0)
-                                materials
+                [ Element.column [ spacing 8, alignTop ]
+                    (title label
+                        :: List.map
+                            materialNavigationItem
+                            (if pedantic then
+                                List.filter
+                                    (\( count, _, _ ) -> count > 0)
+                                    materials
 
-                         else
-                            List.filter
-                                (\( count, _, material ) -> count > 0 && material.super == SuperMaterial Nothing)
-                                materials
-                        )
+                             else
+                                List.filter
+                                    (\( count, _, material ) -> count > 0 && material.super == SuperMaterial Nothing)
+                                    materials
+                            )
+                    )
+                ]
             )
-        |> column [ spacing 8, alignTop, Element.width Element.shrink ]
+        |> column [ spacing 20, alignTop, Element.width Element.shrink ]
 
 
 glassName : Glass -> String
@@ -1214,7 +1218,7 @@ view model =
                     [ Element.width Element.fill, Element.height Element.fill, Element.scrollbarY, spacing 0 ]
                     [ column
                         [ spacing 5
-                        , padding 20
+                        , paddingEach { edges | left = 20, right = 20 }
                         , alignTop
                         , Element.width
                             (Element.px
@@ -1251,7 +1255,7 @@ view model =
 
                                 else
                                     [ Element.column
-                                        [ paddingEach { edges | top = 30 }
+                                        [ paddingEach { edges | top = 30, bottom = 50 }
                                         , spacing 5
                                         ]
                                         [ paragraph
@@ -1278,7 +1282,7 @@ view model =
                         )
                     , column
                         [ alignTop
-                        , padding 20
+                        , paddingEach { edges | left = 20, right = 20 }
                         , spacing 5
                         , Element.Region.navigation
                         , Element.width
@@ -1307,10 +1311,12 @@ view model =
                         ]
                     , column
                         [ alignTop
-                        , padding 20
+                        , paddingEach { edges | left = 20, right = 20 }
                         , spacing 5
                         , Element.Region.mainContent
                         , Element.width (Element.maximum 640 Element.fill)
+                        , Element.height Element.fill
+                        , Element.scrollbarY
                         ]
                         [ case model.selectedRecipe of
                             Just r ->
