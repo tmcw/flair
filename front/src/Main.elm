@@ -457,7 +457,7 @@ init isMobile =
 
             else
                 Desktop
-      , tab = TSettings
+      , tab = TDetail
       }
         |> deriveMaterials
     , loadInventory
