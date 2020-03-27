@@ -1222,7 +1222,7 @@ view model =
                         , alignTop
                         , Element.width
                             (Element.px
-                                240
+                                260
                             )
                         , Element.height
                             Element.fill
@@ -1287,7 +1287,7 @@ view model =
                         , Element.Region.navigation
                         , Element.width
                             (Element.px
-                                300
+                                360
                             )
                         , Element.height Element.fill
                         ]
