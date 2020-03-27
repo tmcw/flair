@@ -54,6 +54,18 @@ type Sort
     | Alphabetical
 
 
+type Device
+    = Desktop
+    | Mobile
+
+
+type Tab
+    = TMaterials
+    | TCocktails
+    | TDetail
+    | TSettings
+
+
 type alias Model =
     { recipes : List Recipe
     , materials : List Material
@@ -68,6 +80,8 @@ type alias Model =
     , syncing : Bool
     , sentEmail : Bool
     , countedMaterials : List MaterialsGroup
+    , device : Device
+    , tab : Tab
     }
 
 
@@ -84,9 +98,11 @@ type Msg
     | Ignored
     | GotOk (Result Http.Error Bool)
     | GotMagic (Result Http.Error Bool)
+    | GotDevice Device
     | GotInventory (Result Http.Error (List String))
     | GetMagicLink
     | SetEmail String
+    | SetTab Tab
 
 
 
@@ -192,6 +208,7 @@ update msg model =
 
                     else
                         Just recipe
+                , tab = TDetail
               }
             , Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug recipe))
             )
@@ -306,6 +323,9 @@ update msg model =
         SetEmail e ->
             ( { model | email = e }, Cmd.none )
 
+        SetTab tab ->
+            ( { model | tab = tab }, Cmd.none )
+
         Ignored ->
             ( model, Cmd.none )
 
@@ -345,13 +365,28 @@ update msg model =
         GotMagic _ ->
             ( { model | sentEmail = True }, Cmd.none )
 
+        GotDevice device ->
+            ( { model | device = device }, Cmd.none )
+
         GotOk _ ->
             ( model, Cmd.none )
 
 
+resizeHandler : Int -> Int -> Msg
+resizeHandler w _ =
+    if w < 640 then
+        GotDevice Mobile
+
+    else
+        GotDevice Desktop
+
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Browser.Events.onKeyDown keyDecoder
+    Sub.batch
+        [ Browser.Events.onKeyDown keyDecoder
+        , Browser.Events.onResize resizeHandler
+        ]
 
 
 okDecoder : Decoder Bool
@@ -401,8 +436,8 @@ loadInventory =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Bool -> ( Model, Cmd Msg )
+init isMobile =
     ( { recipes = recipes
       , materials = []
       , countedMaterials = []
@@ -416,6 +451,13 @@ init =
       , syncing = False
       , sentEmail = False
       , email = ""
+      , device =
+            if isMobile then
+                Mobile
+
+            else
+                Desktop
+      , tab = TDetail
       }
         |> deriveMaterials
     , loadInventory
@@ -425,10 +467,10 @@ init =
 port setDark : Bool -> Cmd msg
 
 
-main : Program () Model Msg
+main : Program Bool Model Msg
 main =
     Browser.element
-        { init = always init
+        { init = init
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -892,8 +934,8 @@ listIngredientInBlock model ingredient =
         (text ingredient.material.name)
 
 
-noneSelected : Element.Element Msg
-noneSelected =
+noneSelected : Model -> Element.Element Msg
+noneSelected model =
     column [ spacing 20, alignTop ]
         [ el [ Font.bold ] (text "Hi.")
         , paragraph [ spacing 10 ] [ el [] (text """
@@ -906,6 +948,18 @@ noneSelected =
     ingredients that you have, it'll put recipes that you can make (or barely make) closer to the top. Also, click on 'Grid' for a wacky adjacency grid
     of cocktails and their ingredients.""") ]
         , paragraph [ spacing 10 ] [ el [] (text """Also, for vim fans, there’s j & k support.""") ]
+        , el []
+            (Element.link
+                [ Font.color
+                    (if model.dark then
+                        lightBlue
+
+                     else
+                        blue
+                    )
+                ]
+                { url = "https://github.com/tmcw/flair", label = text "{source code}" }
+            )
         ]
 
 
@@ -973,27 +1027,26 @@ listRecipes model =
 
 header : Model -> Element.Element Msg
 header model =
-    row [ Element.width Element.fill, paddingEach { edges | left = 20, right = 20, top = 20, bottom = 30 } ]
-        [ row [ Element.width Element.shrink, Element.alignLeft ]
-            [ Input.radioRow
-                [ spacing 20
-                ]
-                { onChange = SetMode
-                , selected = Just model.mode
-                , label = Input.labelHidden "Mode"
-                , options =
-                    [ Input.option Normal (text "List")
-                    , Input.option Grid (text "Grid")
-                    ]
-                }
+    let
+        leftItems =
+            [ case model.device of
+                Desktop ->
+                    Input.radioRow
+                        [ spacing 10
+                        ]
+                        { onChange = SetMode
+                        , selected = Just model.mode
+                        , label = Input.labelHidden "Mode"
+                        , options =
+                            [ Input.option Normal (text "List")
+                            , Input.option Grid (text "Grid")
+                            ]
+                        }
+
+                Mobile ->
+                    Element.none
             , Input.checkbox
-                [ paddingEach
-                    { left = 20
-                    , top = 0
-                    , bottom = 0
-                    , right = 5
-                    }
-                ]
+                []
                 { onChange = SetSubsitute
                 , icon = checkboxIconL
                 , checked = model.pedantic
@@ -1002,13 +1055,7 @@ header model =
                         (text "Pedantic")
                 }
             , Input.checkbox
-                [ paddingEach
-                    { left = 20
-                    , top = 0
-                    , bottom = 0
-                    , right = 5
-                    }
-                ]
+                []
                 { onChange = SetDark
                 , icon = checkboxIconL
                 , checked = model.dark
@@ -1017,68 +1064,70 @@ header model =
                         (text "Dark")
                 }
             ]
-        , row [ Element.width Element.shrink, Element.alignRight ]
-            [ el []
-                (Element.link
-                    [ Font.color
-                        (if model.dark then
-                            lightBlue
 
-                         else
-                            blue
-                        )
-                    ]
-                    { url = "https://github.com/tmcw/flair", label = text "{source code}" }
-                )
-            , el
-                [ paddingEach
-                    { edges
-                        | left = 40
-                        , right = 5
-                    }
-                ]
-                (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
-            , el []
-                (select
-                    [ Html.Events.onInput SetSort
-                    , Html.Attributes.id
-                        "sort"
-                    ]
-                    [ option [ value "Feasibility" ]
-                        [ Html.text "Feasibility"
+        rightItems =
+            [ row [ spacing 10 ]
+                [ el
+                    []
+                    (label [ Html.Attributes.for "sort" ] [ Html.text "Sort" ] |> html)
+                , el []
+                    (select
+                        [ Html.Events.onInput SetSort
+                        , Html.Attributes.id
+                            "sort"
                         ]
-                    , option [ value "Alphabetical" ]
-                        [ Html.text "Alphabetical"
+                        [ option [ value "Feasibility" ]
+                            [ Html.text "Feasibility"
+                            ]
+                        , option [ value "Alphabetical" ]
+                            [ Html.text "Alphabetical"
+                            ]
                         ]
-                    ]
-                    |> html
-                )
-            , el
-                [ paddingEach
-                    { edges
-                        | left = 40
-                        , right = 5
-                    }
+                        |> html
+                    )
                 ]
-                (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
-            , select
-                [ Html.Events.onInput SetUnits
-                , Html.Attributes.id
-                    "units"
+            , row [ spacing 10 ]
+                [ el
+                    []
+                    (label [ Html.Attributes.for "units" ] [ Html.text "Units" ] |> html)
+                , el []
+                    (select
+                        [ Html.Events.onInput SetUnits
+                        , Html.Attributes.id
+                            "units"
+                        ]
+                        [ option [ value "Ml" ]
+                            [ Html.text "Ml"
+                            ]
+                        , option [ value "Cl" ]
+                            [ Html.text "Cl"
+                            ]
+                        , option [ value "Oz" ]
+                            [ Html.text "Oz"
+                            ]
+                        ]
+                        |> html
+                    )
                 ]
-                [ option [ value "Ml" ]
-                    [ Html.text "Ml"
-                    ]
-                , option [ value "Cl" ]
-                    [ Html.text "Cl"
-                    ]
-                , option [ value "Oz" ]
-                    [ Html.text "Oz"
-                    ]
-                ]
-                |> html
             ]
-        ]
+    in
+    if model.device == Mobile then
+        column
+            [ paddingEach { edges | left = 20, right = 20 }
+            , spacing 20
+            ]
+            (title "SETTINGS"
+                :: leftItems
+                ++ rightItems
+            )
+
+    else
+        row [ Element.width Element.fill, paddingEach { edges | left = 20, right = 20, top = 20, bottom = 30 } ]
+            [ row [ Element.width Element.shrink, Element.alignLeft, spacing 20 ]
+                leftItems
+            , row [ Element.width Element.shrink, Element.alignRight, spacing 20 ]
+                rightItems
+            ]
 
 
 
@@ -1188,6 +1237,130 @@ gridView model =
 
 view : Model -> Html Msg
 view model =
+    let
+        mWidth : Int -> Element.Attribute Msg
+        mWidth w =
+            if model.device == Mobile then
+                Element.width Element.fill
+
+            else
+                Element.width (Element.px w)
+
+        recipes =
+            column
+                [ alignTop
+                , paddingEach
+                    (if model.device == Desktop then
+                        { edges | left = 20, right = 20 }
+
+                     else
+                        { edges | left = 10, right = 10 }
+                    )
+                , spacing 5
+                , Element.Region.navigation
+                , mWidth 360
+                , Element.height Element.fill
+                ]
+                [ row
+                    [ Element.width Element.fill
+                    , spacing 10
+                    ]
+                    [ el
+                        [ paddingEach { edges | left = 10 }
+                        , Element.width Element.fill
+                        ]
+                        (title
+                            "COCKTAILS"
+                        )
+                    ]
+                , el
+                    [ Element.scrollbarY, Element.height Element.fill ]
+                    (listRecipes
+                        model
+                    )
+                ]
+
+        detail =
+            column
+                [ alignTop
+                , paddingEach { edges | left = 20, right = 20 }
+                , spacing 5
+                , Element.Region.mainContent
+                , Element.width (Element.maximum 640 Element.fill)
+                , Element.height Element.fill
+                , Element.scrollbarY
+                ]
+                [ case model.selectedRecipe of
+                    Just r ->
+                        displayRecipe model r
+
+                    Nothing ->
+                        noneSelected model
+                ]
+
+        materials =
+            column
+                [ spacing 5
+                , paddingEach { edges | left = 20, right = 20 }
+                , alignTop
+                , mWidth 260
+                , Element.height
+                    Element.fill
+                , Element.scrollbarY
+                ]
+                (listMaterials model.pedantic model.countedMaterials
+                    :: (if model.syncing then
+                            [ Element.el
+                                [ paddingEach { edges | top = 30 }
+                                ]
+                                (Element.link
+                                    [ Font.color
+                                        (if model.dark then
+                                            lightBlue
+
+                                         else
+                                            blue
+                                        )
+                                    ]
+                                    { url = "/api/signout", label = text "Sign out" }
+                                )
+                            ]
+
+                        else if model.sentEmail then
+                            [ paragraph
+                                [ paddingEach { edges | bottom = 10, top = 30 }
+                                ]
+                                [ el [] (text "Check your email!") ]
+                            ]
+
+                        else
+                            [ Element.column
+                                [ paddingEach { edges | top = 30, bottom = 50 }
+                                , spacing 5
+                                ]
+                                [ paragraph
+                                    [ paddingEach { edges | bottom = 10 }
+                                    ]
+                                    [ el [] (text "Sign in to save your ingredients") ]
+                                , Input.text
+                                    []
+                                    { onChange = \email -> SetEmail email
+                                    , text = model.email
+                                    , placeholder = Just (Input.placeholder [] (text "Email"))
+                                    , label = Input.labelHidden "Email"
+                                    }
+                                , Input.button
+                                    [ Font.center
+                                    , Element.width Element.fill
+                                    ]
+                                    { onPress = Just GetMagicLink
+                                    , label = text "GET LINK"
+                                    }
+                                ]
+                            ]
+                       )
+                )
+    in
     Element.layout
         [ Font.size 13
         , Font.color
@@ -1208,123 +1381,103 @@ view model =
         , Element.width Element.fill
         , Element.height Element.fill
         ]
-        (column [ Element.width Element.fill, Element.height Element.fill ]
-            [ header model
+        (column
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , if model.device == Mobile then
+                spacing 20
+
+              else
+                spacing 0
+            ]
+            [ if model.device == Desktop then
+                header model
+
+              else
+                Element.none
+            , if model.device == Mobile then
+                Element.row
+                    [ Border.widthEach { edges | bottom = 1 }
+                    , Element.spaceEvenly
+                    , padding 20
+                    , Element.width Element.fill
+                    ]
+                    [ Input.button
+                        [ Font.alignLeft
+                        , if model.tab == TMaterials then
+                            Font.underline
+
+                          else
+                            Font.unitalicized
+                        ]
+                        { onPress = Just (SetTab TMaterials)
+                        , label = text "Ingredients"
+                        }
+                    , Input.button
+                        [ Font.alignLeft
+                        , if model.tab == TCocktails then
+                            Font.underline
+
+                          else
+                            Font.unitalicized
+                        ]
+                        { onPress = Just (SetTab TCocktails)
+                        , label = text "Cocktails"
+                        }
+                    , Input.button
+                        [ Font.alignLeft
+                        , if model.tab == TDetail then
+                            Font.underline
+
+                          else
+                            Font.unitalicized
+                        ]
+                        { onPress = Just (SetTab TDetail)
+                        , label = text "Detail"
+                        }
+                    , Input.button
+                        [ Font.alignLeft
+                        , if model.tab == TSettings then
+                            Font.underline
+
+                          else
+                            Font.unitalicized
+                        ]
+                        { onPress = Just (SetTab TSettings)
+                        , label = text "*"
+                        }
+                    ]
+
+              else
+                Element.none
             , if model.mode == Grid then
                 gridView model
 
+              else if model.device == Mobile then
+                Element.el [ Element.scrollbarY, Element.height Element.fill, Element.width Element.fill ]
+                    (case model.tab of
+                        TMaterials ->
+                            materials
+
+                        TCocktails ->
+                            recipes
+
+                        TDetail ->
+                            detail
+
+                        TSettings ->
+                            header model
+                    )
+
               else
                 row
-                    [ Element.width Element.fill, Element.height Element.fill, Element.scrollbarY, spacing 0 ]
-                    [ column
-                        [ spacing 5
-                        , paddingEach { edges | left = 20, right = 20 }
-                        , alignTop
-                        , Element.width
-                            (Element.px
-                                260
-                            )
-                        , Element.height
-                            Element.fill
-                        , Element.scrollbarY
-                        ]
-                        (listMaterials model.pedantic model.countedMaterials
-                            :: (if model.syncing then
-                                    [ Element.el
-                                        [ paddingEach { edges | top = 30 }
-                                        ]
-                                        (Element.link
-                                            [ Font.color
-                                                (if model.dark then
-                                                    lightBlue
-
-                                                 else
-                                                    blue
-                                                )
-                                            ]
-                                            { url = "/api/signout", label = text "Sign out" }
-                                        )
-                                    ]
-
-                                else if model.sentEmail then
-                                    [ paragraph
-                                        [ paddingEach { edges | bottom = 10, top = 30 }
-                                        ]
-                                        [ el [] (text "Check your email!") ]
-                                    ]
-
-                                else
-                                    [ Element.column
-                                        [ paddingEach { edges | top = 30, bottom = 50 }
-                                        , spacing 5
-                                        ]
-                                        [ paragraph
-                                            [ paddingEach { edges | bottom = 10 }
-                                            ]
-                                            [ el [] (text "Sign in to save your ingredients") ]
-                                        , Input.text
-                                            []
-                                            { onChange = \email -> SetEmail email
-                                            , text = model.email
-                                            , placeholder = Just (Input.placeholder [] (text "Email"))
-                                            , label = Input.labelHidden "Email"
-                                            }
-                                        , Input.button
-                                            [ Font.center
-                                            , Element.width Element.fill
-                                            ]
-                                            { onPress = Just GetMagicLink
-                                            , label = text "GET LINK"
-                                            }
-                                        ]
-                                    ]
-                               )
-                        )
-                    , column
-                        [ alignTop
-                        , paddingEach { edges | left = 20, right = 20 }
-                        , spacing 5
-                        , Element.Region.navigation
-                        , Element.width
-                            (Element.px
-                                360
-                            )
-                        , Element.height Element.fill
-                        ]
-                        [ row
-                            [ Element.width Element.fill
-                            , spacing 10
-                            ]
-                            [ el
-                                [ paddingEach { edges | left = 10 }
-                                , Element.width Element.fill
-                                ]
-                                (title
-                                    "COCKTAILS"
-                                )
-                            ]
-                        , el
-                            [ Element.scrollbarY, Element.height Element.fill ]
-                            (listRecipes
-                                model
-                            )
-                        ]
-                    , column
-                        [ alignTop
-                        , paddingEach { edges | left = 20, right = 20 }
-                        , spacing 5
-                        , Element.Region.mainContent
-                        , Element.width (Element.maximum 640 Element.fill)
-                        , Element.height Element.fill
-                        , Element.scrollbarY
-                        ]
-                        [ case model.selectedRecipe of
-                            Just r ->
-                                displayRecipe model r
-
-                            Nothing ->
-                                noneSelected
-                        ]
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.scrollbarY
+                    ]
+                    [ materials
+                    , recipes
+                    , detail
                     ]
             ]
         )
