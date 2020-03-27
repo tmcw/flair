@@ -1,6 +1,7 @@
 port module Main exposing (Msg(..), main, setDark, update, view)
 
 import Browser
+import Browser.Dom as Dom
 import Browser.Events
 import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
 import Element exposing (Element, alignTop, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
@@ -19,8 +20,10 @@ import Json.Encode as Encode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
 import Set
 import Set.Any exposing (AnySet)
+import Slug
 import Svg exposing (path, svg)
 import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width)
+import Task
 
 
 
@@ -190,7 +193,7 @@ update msg model =
                     else
                         Just recipe
               }
-            , Cmd.none
+            , Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug recipe))
             )
 
         SetUnits units ->
@@ -230,29 +233,45 @@ update msg model =
             )
 
         MoveUp ->
-            ( { model
-                | selectedRecipe =
+            let
+                selected =
                     case model.selectedRecipe of
                         Just r ->
                             getNext (List.reverse model.recipes) r
 
                         Nothing ->
                             List.head model.recipes
+            in
+            ( { model
+                | selectedRecipe = selected
               }
-            , Cmd.none
+            , case selected of
+                Just r ->
+                    Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug r))
+
+                Nothing ->
+                    Cmd.none
             )
 
         MoveDown ->
-            ( { model
-                | selectedRecipe =
+            let
+                selected =
                     case model.selectedRecipe of
                         Just r ->
                             getNext model.recipes r
 
                         Nothing ->
                             List.head model.recipes
+            in
+            ( { model
+                | selectedRecipe = selected
               }
-            , Cmd.none
+            , case selected of
+                Just r ->
+                    Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug r))
+
+                Nothing ->
+                    Cmd.none
             )
 
         ToggleIngredient material checked ->
@@ -677,7 +696,7 @@ title : String -> Element.Element Msg
 title name =
     el
         [ bold
-        , paddingEach { edges | bottom = 5, top = 10 }
+        , paddingEach { edges | bottom = 5 }
         ]
         (text name)
 
@@ -687,20 +706,24 @@ listMaterials pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
-                title label
-                    :: List.map materialNavigationItem
-                        (if pedantic then
-                            List.filter
-                                (\( count, _, _ ) -> count > 0)
-                                materials
+                [ Element.column [ spacing 8, alignTop ]
+                    (title label
+                        :: List.map
+                            materialNavigationItem
+                            (if pedantic then
+                                List.filter
+                                    (\( count, _, _ ) -> count > 0)
+                                    materials
 
-                         else
-                            List.filter
-                                (\( count, _, material ) -> count > 0 && material.super == SuperMaterial Nothing)
-                                materials
-                        )
+                             else
+                                List.filter
+                                    (\( count, _, material ) -> count > 0 && material.super == SuperMaterial Nothing)
+                                    materials
+                            )
+                    )
+                ]
             )
-        |> column [ spacing 8, alignTop, Element.width Element.shrink ]
+        |> column [ spacing 20, alignTop, Element.width Element.shrink ]
 
 
 glassName : Glass -> String
@@ -778,6 +801,13 @@ neighborBlock ( add, remove, neighbor ) =
         ]
 
 
+recipeSlug : Recipe -> String
+recipeSlug recipe =
+    Maybe.map Slug.toString
+        (Slug.generate recipe.name)
+        |> Maybe.withDefault ""
+
+
 recipeBlock : Model -> Recipe -> Element.Element Msg
 recipeBlock model recipe =
     let
@@ -801,6 +831,10 @@ recipeBlock model recipe =
          , Element.height Element.fill
          , alignTop
          , onClick (SelectRecipe recipe)
+         , Element.htmlAttribute
+            (Html.Attributes.id (recipeSlug recipe))
+         , Element.htmlAttribute
+            (Html.Attributes.tabindex 0)
          ]
             ++ (if selected then
                     if model.dark then
@@ -939,7 +973,7 @@ listRecipes model =
 
 header : Model -> Element.Element Msg
 header model =
-    row [ Element.width Element.fill, padding 20 ]
+    row [ Element.width Element.fill, paddingEach { edges | left = 20, right = 20, top = 20, bottom = 30 } ]
         [ row [ Element.width Element.shrink, Element.alignLeft ]
             [ Input.radioRow
                 [ spacing 20
@@ -1155,9 +1189,7 @@ gridView model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ padding 20
-        , Font.size 13
-        , Element.width Element.fill
+        [ Font.size 13
         , Font.color
             (if model.dark then
                 white
@@ -1173,21 +1205,28 @@ view model =
             , Font.typeface "Menlo"
             , Font.monospace
             ]
+        , Element.width Element.fill
+        , Element.height Element.fill
         ]
-        (column [ Element.width Element.fill ]
+        (column [ Element.width Element.fill, Element.height Element.fill ]
             [ header model
             , if model.mode == Grid then
                 gridView model
 
               else
                 row
-                    [ Element.width Element.fill, spacing 0 ]
+                    [ Element.width Element.fill, Element.height Element.fill, Element.scrollbarY, spacing 0 ]
                     [ column
                         [ spacing 5
-                        , padding 20
+                        , paddingEach { edges | left = 20, right = 20 }
                         , alignTop
                         , Element.width
-                            Element.shrink
+                            (Element.px
+                                260
+                            )
+                        , Element.height
+                            Element.fill
+                        , Element.scrollbarY
                         ]
                         (listMaterials model.pedantic model.countedMaterials
                             :: (if model.syncing then
@@ -1216,7 +1255,7 @@ view model =
 
                                 else
                                     [ Element.column
-                                        [ paddingEach { edges | top = 30 }
+                                        [ paddingEach { edges | top = 30, bottom = 50 }
                                         , spacing 5
                                         ]
                                         [ paragraph
@@ -1243,11 +1282,14 @@ view model =
                         )
                     , column
                         [ alignTop
-                        , padding 20
+                        , paddingEach { edges | left = 20, right = 20 }
                         , spacing 5
                         , Element.Region.navigation
                         , Element.width
-                            (Element.maximum 400 Element.fill)
+                            (Element.px
+                                360
+                            )
+                        , Element.height Element.fill
                         ]
                         [ row
                             [ Element.width Element.fill
@@ -1261,14 +1303,20 @@ view model =
                                     "COCKTAILS"
                                 )
                             ]
-                        , listRecipes model
+                        , el
+                            [ Element.scrollbarY, Element.height Element.fill ]
+                            (listRecipes
+                                model
+                            )
                         ]
                     , column
                         [ alignTop
-                        , padding 20
+                        , paddingEach { edges | left = 20, right = 20 }
                         , spacing 5
                         , Element.Region.mainContent
                         , Element.width (Element.maximum 640 Element.fill)
+                        , Element.height Element.fill
+                        , Element.scrollbarY
                         ]
                         [ case model.selectedRecipe of
                             Just r ->
