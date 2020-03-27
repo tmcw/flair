@@ -973,7 +973,7 @@ listRecipes model =
 
 header : Model -> Element.Element Msg
 header model =
-    row [ Element.width Element.fill, padding 20 ]
+    row [ Element.width Element.fill, paddingEach { edges | left = 20, right = 20, top = 20, bottom = 30 } ]
         [ row [ Element.width Element.shrink, Element.alignLeft ]
             [ Input.radioRow
                 [ spacing 20
