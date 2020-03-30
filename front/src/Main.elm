@@ -1343,7 +1343,9 @@ view model =
                                     ]
                                     [ el [] (text "Sign in to save your ingredients") ]
                                 , Input.text
-                                    []
+                                    [ Html.Events.stopPropagationOn "keydown" (Decode.succeed ( Ignored, True ))
+                                        |> Element.htmlAttribute
+                                    ]
                                     { onChange = \email -> SetEmail email
                                     , text = model.email
                                     , placeholder = Just (Input.placeholder [] (text "Email"))
