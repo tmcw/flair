@@ -3,7 +3,7 @@ port module Main exposing (Msg(..), main, setDark, update, view)
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
-import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
+import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), Video(..), recipes)
 import Element exposing (Element, alignTop, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
 import Element.Background
 import Element.Border as Border
@@ -11,7 +11,7 @@ import Element.Events exposing (onClick)
 import Element.Font as Font exposing (bold, strike)
 import Element.Input as Input
 import Element.Region
-import Html exposing (Html, label, option, select)
+import Html exposing (Html, details, iframe, label, option, select, summary)
 import Html.Attributes exposing (value)
 import Html.Events
 import Http
@@ -480,6 +480,19 @@ main =
 materialKey : Material -> String
 materialKey ingredient =
     ingredient.name
+
+
+parseTime : String -> String
+parseTime str =
+    let
+        parts =
+            str |> String.split ":" |> List.map String.toInt |> List.map (Maybe.withDefault 0)
+    in
+    ((List.head parts |> Maybe.withDefault 0)
+        * 60
+        + (List.head (Maybe.withDefault [] (List.tail parts)) |> Maybe.withDefault 0)
+    )
+        |> String.fromInt
 
 
 countMaterials : Model -> MaterialType -> List CachedMaterial
@@ -997,6 +1010,23 @@ displayRecipe model recipe =
                 [ alignTop, spacing 8 ]
          , paragraph [ spacing 10, alignTop, Element.width Element.fill ] [ text recipe.description ]
          ]
+            ++ (case recipe.video of
+                    Nothing ->
+                        []
+
+                    Just (Epicurious time) ->
+                        [ details []
+                            [ summary [] [ Html.text "Video" ]
+                            , iframe
+                                [ Html.Attributes.src ("https://www.youtube-nocookie.com/embed/b0IuTL3Z-kk?start=" ++ parseTime time)
+                                , Html.Attributes.width 560
+                                , Html.Attributes.height 315
+                                ]
+                                []
+                            ]
+                            |> html
+                        ]
+               )
             ++ (if List.isEmpty neighbors then
                     []
 

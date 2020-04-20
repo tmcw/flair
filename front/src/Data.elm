@@ -1,4 +1,4 @@
-module Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), recipes)
+module Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), Video(..), recipes)
 
 import Quantity exposing (Quantity(..))
 
@@ -747,12 +747,77 @@ chamomileSyrup =
     material "Chamomile syrup" Syrup
 
 
+type Video
+    = Epicurious String
+
+
 type alias Recipe =
     { name : String
     , ingredients : List Ingredient
     , description : String
     , glass : Glass
+    , video : Maybe Video
     }
+
+
+
+-- Whiskey Fix 7:11
+-- Presbyterian 8:58
+-- Blinker 9:58
+-- Improved Whiskey Cocktail 10:41
+-- Monte Carlo 11:25
+-- Martini
+-- Gimlet 15:00
+-- Gin Rickey 15:34
+-- Aviation Number 1 16:37
+-- 20th Century 19:51
+--
+-- Bee’s Knees 20:46
+--
+--
+-- Vodka Martini 21:53
+--
+--
+-- Headless Horseman 23:19
+--
+--
+--
+--
+-- Mexican Firing Squad Special 25:30
+--
+--
+-- Hemingway Daiquiri 26:32
+--
+--
+-- Mai Tai 27:20
+--
+--
+-- Hotel Nacional Special 28:47
+--
+--
+--
+-- Brandy Alexander 30:45
+--
+-- Vieux Carré 31:04
+--
+-- Pink Lady 31:38
+--
+-- Delmonico 32:13
+--
+-- Jack Rose 32:42
+--
+-- Pan American Clipper 33:01
+--
+-- Aperol Spritz 33:11
+--
+-- Americano 33:41
+--
+-- Champagne Cocktail 34:03
+--
+-- Bamboo 34:26
+--
+-- Pisco Sour 35:00
+--
 
 
 recipes : List Recipe
@@ -768,6 +833,7 @@ recipes =
             ]
       , description = """Stir in mixing glass with ice & strain. Garnish with orange slice."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/French_75_(cocktail)
@@ -781,6 +847,7 @@ recipes =
             ]
       , description = """Pour all the ingredients, except Champagne, into a shaker. Shake well and strain into a Champagne flute. Top up with Champagne. Stir gently."""
       , glass = ChampagneFlute
+      , video = Just (Epicurious "29:55")
       }
 
     -- https://en.wikipedia.org/wiki/Rum_and_Coke
@@ -794,6 +861,7 @@ recipes =
             ]
       , description = """Build all ingredients in a highball glass filled with ice. Garnish with lime wedge."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Moscow_mule
@@ -807,6 +875,7 @@ recipes =
             ]
       , description = """Combine vodka and ginger beer in a highball glass filled with ice. Add lime juice. Stir gently. Garnish with a lime slice."""
       , glass = CopperMug
+      , video = Just (Epicurious "22:42")
       }
 
     -- https://en.wikipedia.org/wiki/Mimosa_(cocktail)
@@ -819,6 +888,7 @@ recipes =
             ]
       , description = """Ensure both ingredients are well chilled, then mix into the glass. Garnish with orange twist (optional)."""
       , glass = ChampagneFlute
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Bellini_(cocktail)
@@ -830,6 +900,7 @@ recipes =
             ]
       , description = """Pour peach purée into chilled glass, add sparkling wine. Stir gently."""
       , glass = ChampagneFlute
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Black_Russian
@@ -841,6 +912,7 @@ recipes =
             ]
       , description = """Pour the ingredients into an old fashioned glass filled with ice cubes. Stir gently."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Caipirinha
@@ -853,6 +925,7 @@ recipes =
             ]
       , description = """Place small lime wedges from one lime and sugar into old fashioned glass and muddle (mash the two ingredients together using a muddler or a wooden spoon). Fill the glass with ice and add the Cachaça. Use vodka instead of cachaça for a caipiroska; rum instead of cachaça for a caipirissima;"""
       , glass = OldFashioned
+      , video = Just (Epicurious "35:50")
       }
 
     -- https://iba-world.com/cocktails/mojito/
@@ -867,6 +940,7 @@ recipes =
             ]
       , description = """Muddle mint springs with sugar and lime juice. Add splash of soda water and fill glass with cracked ice. Pour rum and top with soda water. Garnish with sprig of mint leaves and lemon slice. Serve with straw."""
       , glass = Collins
+      , video = Just (Epicurious "28:10")
       }
 
     -- https://iba-world.com/new-era-drinks/dark-n-stormy/
@@ -878,6 +952,7 @@ recipes =
             ]
       , description = """Fill glass with ice, add rum and top with ginger beer. Garnish with lime wedge."""
       , glass = Highball
+      , video = Just (Epicurious "26:53")
       }
 
     -- 'NEW ERA DRINKS' -----------------------------
@@ -893,6 +968,7 @@ recipes =
             ]
       , description = """Fill glass with crushed ice. Build gin, lemon juice and simple syrup over. Stir, and then pour blackberry liqueur over in a circular fashion to create marbling effect. Garnish with two blackberries and lemon slice."""
       , glass = OldFashioned
+      , video = Just (Epicurious "19:10")
       }
     , { name = "French martini"
       , ingredients =
@@ -903,6 +979,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker with ice cubes. Shake well and strain into a chilled cocktail glass. Squeeze oil from lemon peel onto the drink."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/kamikaze-2/
@@ -915,6 +992,7 @@ recipes =
             ]
       , description = """Shake all ingredients together with ice. Strain into glass. Garnish with lime slice."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/lemon-drop-martini/
@@ -928,6 +1006,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled cocktail glass rimmed with sugar, garnish with a slice of lemon."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/vesper-2/
@@ -940,6 +1019,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled cocktail glass. Add the garnish."""
       , glass = Cocktail
+      , video = Just (Epicurious "23:30")
       }
 
     -- https://en.wikipedia.org/wiki/Boulevardier_(cocktail)
@@ -954,6 +1034,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with a orange zest, optionally a lemon zest."""
       , glass = OldFashioned
+      , video = Just (Epicurious "8:15")
       }
 
     -- 'THE UNFORGETTABLES' --------------------------------------------
@@ -968,6 +1049,7 @@ recipes =
             ]
       , description = """Shake all ingredients with ice and strain contents into a cocktail glass. Sprinkle ground nutmeg on top and serve."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Americano_(cocktail)
@@ -982,6 +1064,7 @@ recipes =
             ]
       , description = """Pour the Campari and vermouth over ice into a highball glass, add a splash of soda water and garnish with half orange slice and a lemon twist."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Angel_Face_(cocktail)
@@ -994,6 +1077,7 @@ recipes =
             ]
       , description = """Shake all ingredients with ice and strain contents into a cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Aviation_(cocktail)
@@ -1008,6 +1092,7 @@ recipes =
             ]
       , description = """Add all ingredients into cocktail shaker filled with ice. Shake well and strain into cocktail glass. Garnish with a cherry."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Bacardi_cocktail
@@ -1020,6 +1105,7 @@ recipes =
             ]
       , description = """Shake together with ice. Strain into glass and serve."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Between_the_Sheets_(cocktail)
@@ -1033,6 +1119,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker with ice cubes, shake, strain into chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Casino_(cocktail)
@@ -1048,6 +1135,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker with ice cubes, shake well. Strain into chilled cocktail glass and garnish with a lemon twist and a marachino cherry."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Clover_Club_Cocktail
@@ -1062,6 +1150,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker filled with ice. Shake well. Strain into cocktail glass. Garnish with fresh raspberries."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Daiquiri
@@ -1074,6 +1163,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker with ice cubes. Shake well. Double Strain in chilled cocktail glass."""
       , glass = Cocktail
+      , video = Just (Epicurious "26:04")
       }
 
     -- https://en.wikipedia.org/wiki/Derby_(cocktail)
@@ -1086,6 +1176,7 @@ recipes =
             ]
       , description = """Pour all ingredients into a mixing glass with ice. Stir. Strain into a cocktail glass. Garnish with fresh mint leaves in the drink."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Martini_(cocktail)
@@ -1099,6 +1190,7 @@ recipes =
             ]
       , description = """Straight: Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Squeeze oil from lemon peel onto the drink, or garnish with olive."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Fizz_(cocktail)#Gin_fizz
@@ -1113,6 +1205,7 @@ recipes =
             ]
       , description = """Shake all ingredients with ice cubes, except soda water. Pour into tumbler. Top with soda water. Garnish with lemon slice."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/John_Collins_(cocktail)
@@ -1129,6 +1222,7 @@ recipes =
             ]
       , description = """Pour all ingredients directly into highball glass filled with ice. Stir gently. Garnish with lemon slice and maraschino cherry. Add a dash of Angostura bitters."""
       , glass = Collins
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Manhattan_(cocktail)
@@ -1142,6 +1236,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with cocktail cherry."""
       , glass = Cocktail
+      , video = Just (Epicurious "2:54")
       }
 
     -- https://iba-world.com/iba-official-cocktails/mary-pickford/
@@ -1155,6 +1250,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled large cocktail glass"""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Monkey_Gland
@@ -1168,6 +1264,7 @@ recipes =
             ]
       , description = """Shake well over ice cubes in a shaker, strain into a chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/iba-official-cocktails/negroni/
@@ -1180,6 +1277,7 @@ recipes =
             ]
       , description = """Pour all ingredients directly into old-fashioned glass filled with ice. Stir gently. Garnish with half orange slice."""
       , glass = OldFashioned
+      , video = Just (Epicurious "15:52")
       }
 
     -- https://en.wikipedia.org/wiki/Old_fashioned_(cocktail)
@@ -1195,6 +1293,7 @@ recipes =
             ]
       , description = """Place sugar cube in old-fashioned glass and saturate with bitters, add a dash of plain water. Muddle until dissolve. Fill the glass with ice cubes and add whiskey. Garnish with orange slice and a cocktail cherry."""
       , glass = OldFashioned
+      , video = Just (Epicurious "1:45")
       }
 
     -- https://en.wikipedia.org/wiki/Paradise_(cocktail)
@@ -1207,6 +1306,7 @@ recipes =
             ]
       , description = """Shake together over ice. Strain into cocktail glass and serve chilled."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Planter%27s_punch
@@ -1225,6 +1325,7 @@ recipes =
             ]
       , description = """Pour all ingredients, except the bitters, into shaker filled with ice. Shake well. Pour into large glass, filled with ice. Add dash Angostura bitters. Garnish with cocktail cherry and pineapple."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Porto_flip
@@ -1238,6 +1339,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker filled with ice. Shake well. Strain into cocktail glass. Sprinkle with fresh ground nutmeg."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Fizz_(cocktail)#Ramos_gin_fizz
@@ -1256,6 +1358,7 @@ recipes =
             ]
       , description = """Pour all ingredients (except soda) in a mixing glass, dry shake (no ice) for two minutes, add ice and hard shake for another minute. Strain into a highball glass without ice, top with soda."""
       , glass = Highball
+      , video = Just (Epicurious "17:38")
       }
 
     -- https://en.wikipedia.org/wiki/Rusty_Nail_(cocktail)
@@ -1268,6 +1371,7 @@ recipes =
             ]
       , description = """Pour all ingredients directly into old-fashioned glass filled with ice. Stir gently. Garnish with a lemon twist."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Sazerac
@@ -1282,6 +1386,7 @@ recipes =
             ]
       , description = """Rinse a chilled old-fashioned glass with the absinthe, add crushed ice and set it aside. Stir the remaining ingredients over ice and set it aside. Discard the ice and any excess absinthe from the prepared glass, and strain the drink into the glass. Add the Lemon peel for garnish. Note: The original recipe changed after the American Civil War, rye whiskey substituted cognac as it became hard to obtain."""
       , glass = OldFashioned
+      , video = Just (Epicurious "5:45")
       }
 
     -- https://en.wikipedia.org/wiki/Screwdriver_(cocktail)
@@ -1294,6 +1399,7 @@ recipes =
             ]
       , description = """Pour all ingredients into a highball glass filled with ice. Stir gently. Garnish with an orange slice."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://iba-world.com/iba-official-cocktails/sidecar/
@@ -1305,6 +1411,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker filled with ice. Shake well and strain into cocktail glass."""
       , glass = Cocktail
+      , video = Just (Epicurious "29:31")
       }
 
     -- https://en.wikipedia.org/wiki/Stinger_(cocktail)
@@ -1316,6 +1423,7 @@ recipes =
             ]
       , description = """Pour in a mixing glass with ice, stir and strain into a cocktail glass. May also be served on rocks in a rocks glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Tuxedo_(cocktail)
@@ -1332,6 +1440,7 @@ recipes =
             ]
       , description = """Stir all ingredients with ice and strain into cocktail glass. Garnish with a cocktail cherry and a lemon zest twist."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Whiskey_sour
@@ -1347,6 +1456,7 @@ recipes =
             ]
       , description = """Egg white is optional. Pour all ingredients into cocktail shaker filled with ice. Shake well (a little harder if using egg white). Strain in cocktail glass. Garnish with half orange slice and maraschino cherry."""
       , glass = OldFashioned
+      , video = Just (Epicurious "4:03")
       }
 
     -- https://en.wikipedia.org/wiki/Sour_(cocktail)#White_Lady
@@ -1359,6 +1469,7 @@ recipes =
             ]
       , description = """Add all ingredients into cocktail shaker filled with ice. Shake well and strain into large cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/french-connection/
@@ -1369,6 +1480,7 @@ recipes =
             ]
       , description = """Pour all ingredients directly into old fashioned glass filled with ice cubes. Stir gently."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/mint-julep/
@@ -1381,6 +1493,7 @@ recipes =
             ]
       , description = """In steel cup gently muddle 4 mint sprigs with sugar and water. Fill the glass with cracked ice, add the Bourbon and stir well until the cup frosts. Garnish with a mint sprig."""
       , glass = SteelCup
+      , video = Just (Epicurious "12:05")
       }
 
     -- https://en.wikipedia.org/wiki/White_Russian_(cocktail)
@@ -1392,6 +1505,7 @@ recipes =
             ]
       , description = """Pour vodka and coffee liqueur into an old fashioned glass filled with ice cubes. Float fresh cream on the top and stir in slowly.."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/bloody-mary/
@@ -1409,6 +1523,7 @@ recipes =
             ]
       , description = """Stir gently all the ingredients in a mixing glass with ice. Add tabasco, celery salt, pepper to taste. Pour into rocks glass. Garnish with celery and lemon wedge. If requested served with ice, pour into highball glass."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/champagne-cocktail/
@@ -1424,6 +1539,7 @@ recipes =
             ]
       , description = """Place the sugar cube with 2 dashes of bitters in a large Champagne glass, add the cognac. Optionally add a few drops of Grand Marnier. Pour gently chilled Champagne. Garnish with orange zest and cherry."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/kir/
@@ -1434,6 +1550,7 @@ recipes =
             ]
       , description = """Pour Crème de Cassis into glass, top up with white wine."""
       , glass = Wine
+      , video = Nothing
       }
     , { name = "Kir royal"
       , ingredients =
@@ -1442,6 +1559,7 @@ recipes =
             ]
       , description = """Pour Crème de Cassis into glass, top up with Champagne."""
       , glass = Wine
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/long-island-iced-tea/
@@ -1459,6 +1577,7 @@ recipes =
             ]
       , description = """Add all ingredients into highball glass filled with ice. Top with cola. Stir gently. Garnish with lemon slice."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Mai_Tai
@@ -1477,6 +1596,7 @@ recipes =
             ]
       , description = """Add all ingredients into a shaker with ice. Shake and pour into a double rocks glass or an highball glass. Garnish with pineapple spear, mint leaves, and lime peel."""
       , glass = Highball
+      , video = Just (Epicurious "27:20")
       }
 
     -- https://iba-world.com/cocktails/margarita/
@@ -1489,6 +1609,7 @@ recipes =
             ]
       , description = """Add all ingredients into a shaker with ice. Shake and strain into a chilled cocktail glass. Garnish with a half salt rim (optional)."""
       , glass = Margarita
+      , video = Just (Epicurious "24:13")
       }
 
     -- https://iba-world.com/new-era-drinks/tommys-margarita/
@@ -1500,6 +1621,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled cocktail glass."""
       , glass = Margarita
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/b52-2/
@@ -1511,6 +1633,7 @@ recipes =
             ]
       , description = """Layer ingredients one at a time starting with coffee liqueur, followed by irish cream and top with triple sec. Flame the triple sec, serve while the flame is still on, accompanied with a straw on side plate."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Barracuda_(cocktail)
@@ -1525,6 +1648,7 @@ recipes =
             ]
       , description = """Shake together with ice. Strain into glass and serve."""
       , glass = Margarita
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/corpse-reviver-2-all-day/
@@ -1539,6 +1663,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker with ice. Shake well and strain in chilled cocktail glass. Garnish with orange zest."""
       , glass = Cocktail
+      , video = Just (Epicurious "16:10")
       }
 
     -- https://iba-world.com/cocktails/cosmopolitan/
@@ -1552,6 +1677,7 @@ recipes =
             ]
       , description = """Add all ingredients into cocktail shaker filled with ice. Shake well and strain into large cocktail glass. Garnish with lemon twist."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/dirty-martini/
@@ -1564,6 +1690,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain in chilled martini glass. Garnish with green olive."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/espresso-martini/
@@ -1576,6 +1703,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/golden-dream/
@@ -1588,6 +1716,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker filled with ice. Shake briskly for few seconds. Strain into chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/grasshopper/
@@ -1600,6 +1729,7 @@ recipes =
             ]
       , description = """Pour all ingredients into shaker filled with ice. Shake briskly for few seconds. Strain into chilled cocktail glass. Garnish with mint leaf (optional)."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/hemingway-special/
@@ -1612,6 +1742,7 @@ recipes =
             ]
       , description = """Pour all ingredients into a shaker with ice. Shake well and strain into a large cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/horses-neck/
@@ -1624,6 +1755,7 @@ recipes =
             ]
       , description = """Pour Cognac and ginger ale directly into highball glass with ice cubes. Stir gently. If preferred, add dashes of Angostura Bitter. Garnish with rind of one lemon spiral."""
       , glass = Collins
+      , video = Nothing
       }
 
     -- https://iba-world.com/cocktails/irish-coffee/
@@ -1636,6 +1768,7 @@ recipes =
             ]
       , description = """Warm black coffee is poured into a pre-heated Irish coffee glass. Whiskey and at least one teaspoon of sugar is added and stirred until dissolved. Fresh thick chilled cream is carefully poured over the back of a spoon held just above the surface of the coffee. The layer of cream will float on the coffee without mixing. Plain sugar can be replaced with sugar syrup."""
       , glass = IrishCoffeeMug
+      , video = Nothing
       }
     , { name = "Tom collins"
       , ingredients =
@@ -1649,6 +1782,7 @@ recipes =
             ]
       , description = """Pour all ingredients directly into highball glass filled with ice. Stir gently. Garnish with lemon slice and maraschino cherry. Add a dash of Angostura bitters."""
       , glass = Collins
+      , video = Just (Epicurious "17:13")
       }
 
     -- https://iba-world.com/cocktails/pina-colada/
@@ -1662,6 +1796,7 @@ recipes =
             ]
       , description = """Blend all the ingredients with ice in a electric blender, pour into a large glass and serve with straws. Garnish with a slice of pineapple with a cocktail cherry. 4 slices of fresh pineapple can be used instead of juice. Historically a few drops of fresh lime juice was added to taste."""
       , glass = Hurricane
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/pisco-sour/
@@ -1676,6 +1811,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled champagne flute. Dash some Angostura bitters on top."""
       , glass = ChampagneFlute
+      , video = Just (Epicurious "35:00")
       }
 
     -- https://iba-world.com/new-era-drinks/russian-spring-punch/
@@ -1691,6 +1827,7 @@ recipes =
             ]
       , description = """Shake the ingredients and pour into highball glass. Top with Sparkling wine. Garnish with a lemon slice and a blackberry."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Sea_Breeze_(cocktail)
@@ -1705,6 +1842,7 @@ recipes =
             ]
       , description = """Build all ingredients in a highball glass filled with ice. Garnish with an orange zest and cherry."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Sex_on_the_Beach
@@ -1720,6 +1858,7 @@ recipes =
             ]
       , description = """Build all ingredients in a highball glass filled with ice. Garnish with an orange zest and cherry."""
       , glass = Highball
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Singapore_Sling
@@ -1739,6 +1878,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker filled with ice cubes. Shake well. Strain into Hurricane glass. Garnish with pineapple and maraschino cherry."""
       , glass = Hurricane
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Spritz_Veneziano
@@ -1752,6 +1892,7 @@ recipes =
             ]
       , description = """Pour tequila and orange juice directly into highball glass filled with ice cubes. Add the grenadine syrup to create chromatic effect (sunrise), do not stir. Garnish with half orange slice or an orange zest."""
       , glass = Collins
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Yellow_Bird_(cocktail)
@@ -1766,6 +1907,7 @@ recipes =
             ]
       , description = """Shake and strain into a chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Zombie_(cocktail)
@@ -1786,6 +1928,7 @@ recipes =
             ]
       , description = """Add all ingredients into an electric blender with 170 grams of cracked ice. With pulse bottom blend for a few seconds. Serve in a tall tumbler glass. Garnish with mint leaves."""
       , glass = ZombieGlass
+      , video = Nothing
       }
 
     -- https://iba-world.com/iba-official-cocktails/brandy-crusta/
@@ -1802,6 +1945,7 @@ recipes =
             ]
       , description = """Mix together all ingredients with ice cubes in a mixing glass and strain into prepared slim cocktail glass. Rub a slice of orange (or lemon) around the rim of the glass and dip it in pulverized white sugar, so that the sugar will adhere to the edge of the glass. Carefully curling place the orange/lemon peel around the inside of the glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Hanky-Panky_cocktail
@@ -1815,6 +1959,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with orange zest."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://en.wikipedia.org/wiki/Last_Word_(cocktail)
@@ -1828,6 +1973,7 @@ recipes =
             ]
       , description = """Add all ingredients into a cocktail shaker. Shake with ice and strain into a chilled cocktail glass."""
       , glass = Cocktail
+      , video = Just (Epicurious "21:18")
       }
 
     -- https://en.wikipedia.org/wiki/Martinez_(cocktail)
@@ -1842,6 +1988,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with Lemon zest."""
       , glass = Cocktail
+      , video = Just (Epicurious "14:20")
       }
 
     -- https://iba-world.com/iba-official-cocktails/vieux-carre/
@@ -1857,6 +2004,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass. Garnish with orange zest and maraschino cherry."""
       , glass = Cocktail
+      , video = Just (Epicurious "31:04")
       }
 
     -- https://en.wikipedia.org/wiki/Bee's_Knees_(cocktail)
@@ -1871,6 +2019,7 @@ recipes =
             ]
       , description = """Stir honey with lemon and orange juices until it dissolves, add gin and shake with ice. Strain into a chilled cocktail glass. Optionally garnish with a lemon or orange zest."""
       , glass = Cocktail
+      , video = Just (Epicurious "20:46")
       }
 
     -- https://iba-world.com/news/cachanchara/
@@ -1884,6 +2033,7 @@ recipes =
             ]
       , description = """Mix honey with water and lime juice and spread the mixture on the bottom and sides of the glass. Add cracked ice, and then the rum. End by energetically stirring from bottom to top. Garnish with Lime wedge."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/fernandito/
@@ -1894,6 +2044,7 @@ recipes =
             ]
       , description = """Pour the Fernet Branca into a double old fashioned glass with ice, fill the glass up with Cola. Gently stir."""
       , glass = Highball -- Double old fashioned?
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/old-cuban/
@@ -1908,6 +2059,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker except the wine, shake well with ice, strain into chilled elegant cocktail glass. Top up with the sparkling wine. Garnish with mint springs."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/paloma/
@@ -1919,8 +2071,9 @@ recipes =
             , ingredient salt None
             , ingredient lime (Slice 1)
             ]
-      , description = """Poor the tequila into a highball glass, squeeze the lime juice. Add ice and salt, fill up pink grapefruit soda. Stir gently. Garnish with a slice of lime."""
+      , description = """Pour the tequila into a highball glass, squeeze the lime juice. Add ice and salt, fill up pink grapefruit soda. Stir gently. Garnish with a slice of lime."""
       , glass = Highball
+      , video = Just (Epicurious "24:47")
       }
 
     -- https://iba-world.com/new-era-drinks/paper-plane/
@@ -1933,6 +2086,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker, shake well with ice, strain into chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/penicillin/
@@ -1947,6 +2101,7 @@ recipes =
             ]
       , description = """Muddle fresh ginger in a shaker and add the remaining ingredients, except for the Islay single malt whiskey. Fill the shaker with ice and shake. Double-strain into a chilled old fashioned glass with ice. Float the single malt whisky on top. Garnish with a candied ginger."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/southside/
@@ -1960,6 +2115,7 @@ recipes =
             ]
       , description = """Egg white optional. Pour all ingredients into a cocktail shaker, shake well with ice, double-strain into chilled cocktail glass. If egg white is used shake vigorously. Garnish with mint springs."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/spicy-fifty/
@@ -1974,6 +2130,7 @@ recipes =
             ]
       , description = """Pour all ingredients (including 2 thin slices of pepper) into a cocktail shaker, shake well with ice, double-strain into chilled cocktail glass. Garnish with a red chili pepper."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/suffering-bastard/
@@ -1989,6 +2146,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker except the ginger beer, shake well with ice, Pour unstrained into a Collins glass or in the original S. Bastard mug and top up with ginger beer. Garnish with mint sprig and optionally an orange slice as well."""
       , glass = Collins
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/tipperary/
@@ -2002,6 +2160,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Garnish with a slice of orange."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/trinidad-sour/
@@ -2014,6 +2173,7 @@ recipes =
             ]
       , description = """Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/ve-n-to/
@@ -2030,6 +2190,7 @@ recipes =
             ]
       , description = """Egg white optional. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled small tumbler glass filled with ice. Garnish with lemon zest and white grapes."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/illegal/
@@ -2045,6 +2206,7 @@ recipes =
             ]
       , description = """Egg white optional. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled cocktail glass, or “on the rocks” in a traditional clay or terracotta mug."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/naked-and-famous/
@@ -2057,6 +2219,7 @@ recipes =
             ]
       , description = """Pour all ingredients into cocktail shaker, shake well with ice, strain into chilled cocktail glass."""
       , glass = Cocktail
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/new-york-sour/
@@ -2072,6 +2235,7 @@ recipes =
             ]
       , description = """Bourbon can be used instead of rye. Pour all ingredients into the shaker. Shake vigorously with ice. Strain into a chilled rocks glass filled with ice. Float the wine on top. Garnish with lemon or orange zest with cherry."""
       , glass = OldFashioned
+      , video = Nothing
       }
 
     -- https://iba-world.com/new-era-drinks/spritz/
@@ -2084,5 +2248,6 @@ recipes =
             ]
       , description = """Build all ingredients into a wine glass filled with ice. Stir gently. Garnish with a slice of orange."""
       , glass = Wine
+      , video = Nothing
       }
     ]
