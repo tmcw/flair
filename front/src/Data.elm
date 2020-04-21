@@ -771,53 +771,19 @@ type alias Recipe =
 -- Gin Rickey 15:34
 -- Aviation Number 1 16:37
 -- 20th Century 19:51
---
--- Bee’s Knees 20:46
---
---
 -- Vodka Martini 21:53
---
---
 -- Headless Horseman 23:19
---
---
---
---
 -- Mexican Firing Squad Special 25:30
---
---
 -- Hemingway Daiquiri 26:32
---
---
--- Mai Tai 27:20
---
---
 -- Hotel Nacional Special 28:47
---
---
---
 -- Brandy Alexander 30:45
---
--- Vieux Carré 31:04
---
 -- Pink Lady 31:38
---
 -- Delmonico 32:13
---
 -- Jack Rose 32:42
---
 -- Pan American Clipper 33:01
---
 -- Aperol Spritz 33:11
---
--- Americano 33:41
---
 -- Champagne Cocktail 34:03
---
 -- Bamboo 34:26
---
--- Pisco Sour 35:00
---
 
 
 recipes : List Recipe
@@ -1064,7 +1030,7 @@ recipes =
             ]
       , description = """Pour the Campari and vermouth over ice into a highball glass, add a splash of soda water and garnish with half orange slice and a lemon twist."""
       , glass = Highball
-      , video = Nothing
+      , video = Epicurious "33:41"
       }
 
     -- https://en.wikipedia.org/wiki/Angel_Face_(cocktail)
