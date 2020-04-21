@@ -1030,7 +1030,7 @@ recipes =
             ]
       , description = """Pour the Campari and vermouth over ice into a highball glass, add a splash of soda water and garnish with half orange slice and a lemon twist."""
       , glass = Highball
-      , video = Epicurious "33:41"
+      , video = Just (Epicurious "33:41")
       }
 
     -- https://en.wikipedia.org/wiki/Angel_Face_(cocktail)
