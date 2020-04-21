@@ -1015,16 +1015,21 @@ displayRecipe model recipe =
                         []
 
                     Just (Epicurious time) ->
-                        [ details []
-                            [ summary [] [ Html.text "Video" ]
-                            , iframe
-                                [ Html.Attributes.src ("https://www.youtube-nocookie.com/embed/b0IuTL3Z-kk?start=" ++ parseTime time)
-                                , Html.Attributes.width 560
-                                , Html.Attributes.height 315
-                                ]
+                        [ el [ paddingEach { edges | top = 20, bottom = 20 }, Element.width Element.fill ]
+                            (details
                                 []
-                            ]
-                            |> html
+                                [ summary [] [ Html.text "Video" ]
+                                , iframe
+                                    [ Html.Attributes.src ("https://www.youtube-nocookie.com/embed/b0IuTL3Z-kk?start=" ++ parseTime time)
+                                    , Html.Attributes.style "width" "100%"
+                                    , Html.Attributes.height 315
+                                    , Html.Attributes.attribute "frameborder" "0"
+                                    , Html.Attributes.attribute "allowfullscreen" "true"
+                                    ]
+                                    []
+                                ]
+                                |> html
+                            )
                         ]
                )
             ++ (if List.isEmpty neighbors then
