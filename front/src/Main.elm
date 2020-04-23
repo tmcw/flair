@@ -955,7 +955,7 @@ listIngredientInBlock model ingredient =
 
 noneSelected : Model -> Element.Element Msg
 noneSelected model =
-    column [ spacing 20, alignTop ]
+    column [ spacing 20, paddingEach { edges | bottom = 40 }, alignTop ]
         [ el [ Font.bold ] (text "Hi.")
         , paragraph [ spacing 10 ] [ el [] (text """
         This is a website that I made about cocktails. I'm not a huge cocktail nerd (drinking is bad, probably), but think that they're cool.
@@ -976,8 +976,22 @@ noneSelected model =
                      else
                         blue
                     )
+                , Font.underline
                 ]
-                { url = "https://github.com/tmcw/flair", label = text "{source code}" }
+                { url = "https://tommacwright.typeform.com/to/M7tx4u", label = text "👋 Feedback welcome!" }
+            )
+        , el []
+            (Element.link
+                [ Font.color
+                    (if model.dark then
+                        lightBlue
+
+                     else
+                        blue
+                    )
+                , Font.underline
+                ]
+                { url = "https://github.com/tmcw/flair", label = paragraph [] [ text "Pull requests welcome - this is open source on GitHub!" ] }
             )
         ]
 
