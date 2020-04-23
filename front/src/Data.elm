@@ -30,7 +30,7 @@ type Glass
       -- Stemware:
       -- | Absinthe
       -- | Chalice
-      -- | ChampagneCoupe
+    | ChampagneCoupe
     | ChampagneFlute
     | Cocktail
     | Hurricane
@@ -472,6 +472,11 @@ lilletBlanc =
     material "Lillet blanc" Fortified
 
 
+kinaLillet : Material
+kinaLillet =
+    material "Kina lillet" Fortified
+
+
 greenCremeDeMenthe : Material
 greenCremeDeMenthe =
     material "Green crème de menthe" Liqueur
@@ -758,32 +763,6 @@ type alias Recipe =
     , glass : Glass
     , video : Maybe Video
     }
-
-
-
--- Whiskey Fix 7:11
--- Presbyterian 8:58
--- Blinker 9:58
--- Improved Whiskey Cocktail 10:41
--- Monte Carlo 11:25
--- Martini
--- Gimlet 15:00
--- Gin Rickey 15:34
--- Aviation Number 1 16:37
--- 20th Century 19:51
--- Vodka Martini 21:53
--- Headless Horseman 23:19
--- Mexican Firing Squad Special 25:30
--- Hemingway Daiquiri 26:32
--- Hotel Nacional Special 28:47
--- Brandy Alexander 30:45
--- Pink Lady 31:38
--- Delmonico 32:13
--- Jack Rose 32:42
--- Pan American Clipper 33:01
--- Aperol Spritz 33:11
--- Champagne Cocktail 34:03
--- Bamboo 34:26
 
 
 recipes : List Recipe
@@ -1156,7 +1135,7 @@ recipes =
             ]
       , description = """Straight: Pour all ingredients into mixing glass with ice cubes. Stir well. Strain into chilled martini cocktail glass. Squeeze oil from lemon peel onto the drink, or garnish with olive."""
       , glass = Cocktail
-      , video = Nothing
+      , video = Just (Epicurious "13:39")
       }
 
     -- https://en.wikipedia.org/wiki/Fizz_(cocktail)#Gin_fizz
@@ -2205,6 +2184,7 @@ recipes =
       }
 
     -- https://iba-world.com/new-era-drinks/spritz/
+    -- Also the 'Aperol spritz'
     , { name = "Spritz"
       , ingredients =
             [ ingredient prosecco (CL 9)
@@ -2214,6 +2194,72 @@ recipes =
             ]
       , description = """Build all ingredients into a wine glass filled with ice. Stir gently. Garnish with a slice of orange."""
       , glass = Wine
-      , video = Nothing
+      , video = Just (Epicurious "33:11")
+      }
+    , { name = "Gimlet"
+      , ingredients =
+            [ ingredient limeJuice (CL 2)
+            , ingredient simpleSyrup (CL 2)
+            , ingredient gin (CL 6)
+            ]
+      , description = """Pour all ingredients into a cocktail strainer, shake well with ice, strain into chilled cocktail glass."""
+      , glass = Cocktail
+      , video = Just (Epicurious "15:00")
+      }
+    , { name = "Martini"
+      , ingredients =
+            [ ingredient gin (CL 6)
+            , ingredient dryVermouth (CL 6)
+            , optionalIngredient lemon (Custom "twist")
+            ]
+      , description = """Mix gin and vermouth in a chilled pint glass, stir with ice. Strain into a champagne coupe."""
+      , glass = ChampagneCoupe
+      , video = Just (Epicurious "13:39")
+      }
+    , { name = "Vodka martini"
+      , ingredients =
+            [ ingredient vodka (CL 8)
+            , ingredient dryVermouth (Drop 1)
+            , optionalIngredient lemon (Custom "twist")
+            , optionalIngredient olive (Whole 1)
+            ]
+      , description = """Mix vodka and dry vermouth in a pint glass. The amount of vermouth used varies and can be as little as a drop. Stir with ice. Optionally add olive brine to make a dirty martini."""
+      , glass = Cocktail
+      , video = Just (Epicurious "21:53")
+      }
+
+    -- https://en.wikipedia.org/wiki/20th_Century_(cocktail)
+    , { name = "20th century"
+      , ingredients =
+            [ ingredient gin (CL 4.5)
+            , ingredient lemonJuice (CL 2)
+            , ingredient whiteCremeDeCacao (CL 1.5)
+            , ingredient kinaLillet (CL 2)
+            , ingredient lemon (Custom "twist")
+            ]
+      , description = """Combine ingredients in a cocktail shaker, shake with ice, strain into a cocktail glass."""
+      , glass = Cocktail
+      , video = Just (Epicurious "19:51")
       }
     ]
+
+
+
+-- Whiskey Fix 7:11
+-- Presbyterian 8:58
+-- Blinker 9:58
+-- Improved Whiskey Cocktail 10:41
+-- Monte Carlo 11:25
+-- Gin Rickey 15:34
+-- Aviation Number 1 16:37
+-- Headless Horseman 23:19
+-- Mexican Firing Squad Special 25:30
+-- Hemingway Daiquiri 26:32
+-- Hotel Nacional Special 28:47
+-- Brandy Alexander 30:45
+-- Pink Lady 31:38
+-- Delmonico 32:13
+-- Jack Rose 32:42
+-- Pan American Clipper 33:01
+-- Champagne Cocktail 34:03
+-- Bamboo 34:26

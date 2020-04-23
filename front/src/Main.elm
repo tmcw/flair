@@ -159,6 +159,9 @@ drinkIcon recipe =
         Wine ->
             icon "M9.25 16.5v-6L7.8 9 7 7l1-4h4l1 4-.8 2-1.45 1.5v6h1.582v.5H7.196v-.5H9.25z"
 
+        ChampagneCoupe ->
+            icon "M9.25 16.5v-8L8 7 6 6 4.5 4.5V3h11v1.5l-1.5 2-2 .5-1.25 1.5v8h1.582v.5H7.196v-.5H9.25z"
+
 
 
 -- Constants
@@ -822,6 +825,9 @@ glassName glass =
 
         ZombieGlass ->
             "Zombie glass"
+
+        ChampagneCoupe ->
+            "Champagne coupe"
 
 
 capitalize : String -> String
