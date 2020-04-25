@@ -4,7 +4,7 @@ import Browser
 import Browser.Dom as Dom
 import Browser.Events
 import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), Video(..), recipes)
-import Element exposing (Element, alignTop, column, el, html, padding, paddingEach, paragraph, row, spacing, text)
+import Element exposing (Element, alignTop, column, el, fill, height, html, padding, paddingEach, paragraph, row, shrink, spacing, text, width)
 import Element.Background
 import Element.Border as Border
 import Element.Events exposing (onClick)
@@ -22,7 +22,7 @@ import Set
 import Set.Any exposing (AnySet)
 import Slug
 import Svg exposing (path, svg)
-import Svg.Attributes exposing (d, fill, height, stroke, strokeWidth, viewBox, width)
+import Svg.Attributes exposing (d, stroke, strokeWidth, viewBox)
 import Task
 
 
@@ -112,15 +112,15 @@ type Msg
 icon : String -> Element.Element Msg
 icon pathSpec =
     svg
-        [ width "20", height "20", fill "none", viewBox "0 0 20 20" ]
+        [ Svg.Attributes.width "20", Svg.Attributes.height "20", Svg.Attributes.fill "none", viewBox "0 0 20 20" ]
         [ path [ d pathSpec, stroke "currentColor", strokeWidth "1" ]
             []
         ]
         |> html
 
 
-drinkIcon : Recipe -> Element.Element Msg
-drinkIcon recipe =
+glassIcon : Recipe -> Element.Element Msg
+glassIcon recipe =
     case recipe.glass of
         OldFashioned ->
             icon "M14 5H6v10c.582.209 2.06.5 4 .5s3.612-.291 4-.5V5zm-8 5h8"
@@ -255,12 +255,9 @@ update msg model =
         MoveUp ->
             let
                 selected =
-                    case model.selectedRecipe of
-                        Just r ->
-                            getNext (List.reverse model.recipes) r
-
-                        Nothing ->
-                            List.head model.recipes
+                    model.selectedRecipe
+                        |> Maybe.map (\r -> getNext (List.reverse model.recipes) r)
+                        |> Maybe.withDefault (List.head model.recipes)
             in
             ( { model
                 | selectedRecipe = selected
@@ -276,12 +273,9 @@ update msg model =
         MoveDown ->
             let
                 selected =
-                    case model.selectedRecipe of
-                        Just r ->
-                            getNext model.recipes r
-
-                        Nothing ->
-                            List.head model.recipes
+                    model.selectedRecipe
+                        |> Maybe.map (\r -> getNext model.recipes r)
+                        |> Maybe.withDefault (List.head model.recipes)
             in
             ( { model
                 | selectedRecipe = selected
@@ -485,16 +479,20 @@ materialKey ingredient =
     ingredient.name
 
 
+
+-- Translate between M:SS (minutes:seconds) syntax into
+-- a number of seconds, for the benefit of YouTube’s skip-to-time
+-- method
+
+
 parseTime : String -> String
 parseTime str =
-    let
-        parts =
-            str |> String.split ":" |> List.map String.toInt |> List.map (Maybe.withDefault 0)
-    in
-    ((List.head parts |> Maybe.withDefault 0)
-        * 60
-        + (List.head (Maybe.withDefault [] (List.tail parts)) |> Maybe.withDefault 0)
-    )
+    str
+        |> String.split ":"
+        |> List.reverse
+        |> List.indexedMap
+            (\idx val -> (String.toInt val |> Maybe.withDefault 0) * max 1 (idx * 60))
+        |> List.sum
         |> String.fromInt
 
 
@@ -764,7 +762,7 @@ listMaterials pedantic countedMaterials =
     countedMaterials
         |> List.concatMap
             (\{ label, materials } ->
-                [ Element.column [ spacing 8, alignTop ]
+                [ column [ spacing 8, alignTop ]
                     (title label
                         :: List.map
                             materialNavigationItem
@@ -781,7 +779,7 @@ listMaterials pedantic countedMaterials =
                     )
                 ]
             )
-        |> column [ spacing 20, alignTop, Element.width Element.shrink ]
+        |> column [ spacing 20, alignTop, width shrink ]
 
 
 glassName : Glass -> String
@@ -845,8 +843,8 @@ neighborBlock ( add, remove, neighbor ) =
     column
         [ spacing 10
         , Element.pointer
-        , Element.width Element.fill
-        , Element.height Element.fill
+        , width fill
+        , height fill
         , alignTop
         , onClick (SelectRecipe neighbor)
         ]
@@ -888,8 +886,8 @@ recipeBlock model recipe =
              else
                 0.5
             )
-         , Element.width Element.fill
-         , Element.height Element.fill
+         , width fill
+         , height fill
          , alignTop
          , onClick (SelectRecipe recipe)
          , Element.htmlAttribute
@@ -925,7 +923,7 @@ recipeBlock model recipe =
                )
         )
         [ row []
-            [ drinkIcon recipe
+            [ glassIcon recipe
             , el [ Font.italic, Font.underline ] (text recipe.name)
             ]
         , recipe.ingredients
@@ -1005,7 +1003,7 @@ displayRecipe model recipe =
     column [ spacing 20, alignTop ]
         ([ title recipe.name
          , row [ spacing 4, spacing 10 ]
-            [ el [ alignTop ] (drinkIcon recipe)
+            [ el [ alignTop ] (glassIcon recipe)
             , paragraph [] [ text ("Served in a " ++ glassName recipe.glass) ]
             ]
          , recipe.ingredients
@@ -1028,14 +1026,14 @@ displayRecipe model recipe =
                 )
             |> column
                 [ alignTop, spacing 8 ]
-         , paragraph [ spacing 10, alignTop, Element.width Element.fill ] [ text recipe.description ]
+         , paragraph [ spacing 10, alignTop, width fill ] [ text recipe.description ]
          ]
             ++ (case recipe.video of
                     Nothing ->
                         []
 
                     Just (Epicurious time) ->
-                        [ el [ paddingEach { edges | top = 20, bottom = 20 }, Element.width Element.fill ]
+                        [ el [ paddingEach { edges | top = 20, bottom = 20 }, width fill ]
                             (details
                                 []
                                 [ summary [] [ Html.text "Video" ]
@@ -1073,7 +1071,7 @@ replacement pedantic ingredient =
 
 listRecipes : Model -> Element.Element Msg
 listRecipes model =
-    column [ spacing 10, Element.width Element.fill ]
+    column [ spacing 10, width fill ]
         (List.map
             (recipeBlock model)
             model.recipes
@@ -1177,10 +1175,10 @@ header model =
             )
 
     else
-        row [ Element.width Element.fill, paddingEach { edges | left = 20, right = 20, top = 20, bottom = 30 } ]
-            [ row [ Element.width Element.shrink, Element.alignLeft, spacing 20 ]
+        row [ width fill, paddingEach { edges | left = 20, right = 20, top = 20, bottom = 30 } ]
+            [ row [ width shrink, Element.alignLeft, spacing 20 ]
                 leftItems
-            , row [ Element.width Element.shrink, Element.alignRight, spacing 20 ]
+            , row [ width shrink, Element.alignRight, spacing 20 ]
                 rightItems
             ]
 
@@ -1296,10 +1294,10 @@ view model =
         mWidth : Int -> Element.Attribute Msg
         mWidth w =
             if model.device == Mobile then
-                Element.width Element.fill
+                width fill
 
             else
-                Element.width (Element.px w)
+                width (Element.px w)
 
         recipes =
             column
@@ -1314,22 +1312,22 @@ view model =
                 , spacing 5
                 , Element.Region.navigation
                 , mWidth 360
-                , Element.height Element.fill
+                , height fill
                 ]
                 [ row
-                    [ Element.width Element.fill
+                    [ width fill
                     , spacing 10
                     ]
                     [ el
                         [ paddingEach { edges | left = 10 }
-                        , Element.width Element.fill
+                        , width fill
                         ]
                         (title
                             "COCKTAILS"
                         )
                     ]
                 , el
-                    [ Element.scrollbarY, Element.height Element.fill ]
+                    [ Element.scrollbarY, height fill ]
                     (listRecipes
                         model
                     )
@@ -1341,8 +1339,8 @@ view model =
                 , paddingEach { edges | left = 20, right = 20 }
                 , spacing 5
                 , Element.Region.mainContent
-                , Element.width (Element.maximum 640 Element.fill)
-                , Element.height Element.fill
+                , width (Element.maximum 640 fill)
+                , height fill
                 , Element.scrollbarY
                 ]
                 [ case model.selectedRecipe of
@@ -1359,13 +1357,13 @@ view model =
                 , paddingEach { edges | left = 20, right = 20 }
                 , alignTop
                 , mWidth 260
-                , Element.height
-                    Element.fill
+                , height
+                    fill
                 , Element.scrollbarY
                 ]
                 (listMaterials model.pedantic model.countedMaterials
                     :: (if model.syncing then
-                            [ Element.el
+                            [ el
                                 [ paddingEach { edges | top = 30 }
                                 ]
                                 (Element.link
@@ -1389,7 +1387,7 @@ view model =
                             ]
 
                         else
-                            [ Element.column
+                            [ column
                                 [ paddingEach { edges | top = 30, bottom = 50 }
                                 , spacing 5
                                 ]
@@ -1408,7 +1406,7 @@ view model =
                                     }
                                 , Input.button
                                     [ Font.center
-                                    , Element.width Element.fill
+                                    , width fill
                                     ]
                                     { onPress = Just GetMagicLink
                                     , label = text "GET LINK"
@@ -1435,12 +1433,12 @@ view model =
             , Font.typeface "Menlo"
             , Font.monospace
             ]
-        , Element.width Element.fill
-        , Element.height Element.fill
+        , width fill
+        , height fill
         ]
         (column
-            [ Element.width Element.fill
-            , Element.height Element.fill
+            [ width fill
+            , height fill
             , if model.device == Mobile then
                 spacing 20
 
@@ -1453,11 +1451,11 @@ view model =
               else
                 Element.none
             , if model.device == Mobile then
-                Element.row
+                row
                     [ Border.widthEach { edges | bottom = 1 }
                     , Element.spaceEvenly
                     , padding 20
-                    , Element.width Element.fill
+                    , width fill
                     ]
                     [ Input.button
                         [ Font.alignLeft
@@ -1511,7 +1509,7 @@ view model =
                 gridView model
 
               else if model.device == Mobile then
-                Element.el [ Element.scrollbarY, Element.height Element.fill, Element.width Element.fill ]
+                el [ Element.scrollbarY, height fill, width fill ]
                     (case model.tab of
                         TMaterials ->
                             materials
@@ -1528,8 +1526,8 @@ view model =
 
               else
                 row
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
+                    [ width fill
+                    , height fill
                     , Element.scrollbarY
                     ]
                     [ materials
