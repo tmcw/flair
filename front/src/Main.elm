@@ -18,8 +18,7 @@ import Http
 import Json.Decode as Decode exposing (Decoder, bool, field, string)
 import Json.Encode as Encode
 import Quantity exposing (Quantity(..), Units(..), printQuantity)
-import Set
-import Set.Any exposing (AnySet)
+import Set exposing (Set)
 import Slug
 import Svg exposing (path, svg)
 import Svg.Attributes exposing (d, stroke, strokeWidth, viewBox)
@@ -38,10 +37,6 @@ type alias MaterialsGroup =
     { label : String
     , materials : List CachedMaterial
     }
-
-
-type alias MaterialSet =
-    AnySet String Material
 
 
 type Mode
@@ -70,7 +65,7 @@ type alias Model =
     { recipes : List Recipe
     , materials : List Material
     , selectedRecipe : Maybe Recipe
-    , availableMaterials : MaterialSet
+    , availableMaterials : Set String
     , units : Units
     , mode : Mode
     , pedantic : Bool
@@ -292,10 +287,10 @@ update msg model =
             ( { model
                 | availableMaterials =
                     if checked then
-                        Set.Any.insert material model.availableMaterials
+                        Set.insert material.name model.availableMaterials
 
                     else
-                        Set.Any.remove material model.availableMaterials
+                        Set.remove material.name model.availableMaterials
               }
                 |> deriveMaterials
             , if model.syncing then
@@ -345,7 +340,8 @@ update msg model =
                                         inventorySet
                                 )
                                 model.materials
-                                |> Set.Any.fromList materialKey
+                                |> List.map materialKey
+                                |> Set.fromList
                         , syncing = True
                       }
                         |> deriveMaterials
@@ -439,7 +435,7 @@ init isMobile =
       , materials = []
       , countedMaterials = []
       , selectedRecipe = Nothing
-      , availableMaterials = Set.Any.empty materialKey
+      , availableMaterials = Set.empty
       , units = Ml
       , mode = Normal
       , pedantic = True
@@ -502,7 +498,7 @@ countMaterials model t =
         |> List.map
             (\material ->
                 ( recipesWithMaterial model.pedantic recipes material
-                , Set.Any.member material model.availableMaterials
+                , Set.member material.name model.availableMaterials
                 , material
                 )
             )
@@ -514,7 +510,7 @@ deriveMaterials model =
     let
         recipesByGap =
             List.map
-                (\recipe -> ( recipe, missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.size |> toFloat ))
+                (\recipe -> ( recipe, missingIngredients model.pedantic model.availableMaterials recipe |> Set.size |> toFloat ))
                 model.recipes
 
         ( sufficient, unsortedInsufficient ) =
@@ -559,8 +555,10 @@ deriveMaterials model =
                 )
                 model.recipes
                 |> List.foldl (::) []
-                |> Set.Any.fromList materialKey
-                |> Set.Any.toList
+
+        -- |> List.map materialKey
+        -- |> Set.fromList
+        -- |> Set.toList
         , recipes = orderedRecipes
     }
         |> (\m ->
@@ -620,23 +618,23 @@ aliasMaterial pedantic material =
                 m
 
 
-getMaterials : Bool -> Recipe -> MaterialSet
+getMaterials : Bool -> Recipe -> Set String
 getMaterials pedantic recipe =
     recipe.ingredients
         |> List.filter
             (\ingredient -> not ingredient.optional && (pedantic || (ingredient.material.t /= Fruit && ingredient.material.t /= Seasoning)))
         |> List.map
             (\ingredient -> aliasMaterial pedantic ingredient.material)
-        |> Set.Any.fromList
-            materialKey
+        |> List.map materialKey
+        |> Set.fromList
 
 
-missingIngredients : Bool -> MaterialSet -> Recipe -> MaterialSet
+missingIngredients : Bool -> Set String -> Recipe -> Set String
 missingIngredients pedantic availableMaterials recipe =
-    Set.Any.diff (getMaterials pedantic recipe) availableMaterials
+    Set.diff (getMaterials pedantic recipe) availableMaterials
 
 
-getNeighbors : Model -> Recipe -> List ( List Material, List Material, Recipe )
+getNeighbors : Model -> Recipe -> List ( List String, List String, Recipe )
 getNeighbors model recipe =
     model.recipes
         |> List.filter (\r -> r.name /= recipe.name)
@@ -649,8 +647,8 @@ getNeighbors model recipe =
                     recipeMaterials =
                         getMaterials model.pedantic recipe
                 in
-                ( Set.Any.diff rMaterials recipeMaterials |> Set.Any.toList
-                , Set.Any.diff recipeMaterials rMaterials |> Set.Any.toList
+                ( Set.diff rMaterials recipeMaterials |> Set.toList
+                , Set.diff recipeMaterials rMaterials |> Set.toList
                 , r
                 )
             )
@@ -838,7 +836,7 @@ capitalize str =
             ""
 
 
-neighborBlock : ( List Material, List Material, Recipe ) -> Element.Element Msg
+neighborBlock : ( List String, List String, Recipe ) -> Element.Element Msg
 neighborBlock ( add, remove, neighbor ) =
     column
         [ spacing 10
@@ -850,8 +848,8 @@ neighborBlock ( add, remove, neighbor ) =
         ]
         [ el [ Font.italic, Font.underline ] (text neighbor.name)
         , paragraph []
-            [ List.map (\a -> "add " ++ a.name) add
-                ++ List.map (\a -> "remove " ++ a.name) remove
+            [ List.map (\a -> "add " ++ a) add
+                ++ List.map (\a -> "remove " ++ a) remove
                 |> String.join ", "
                 |> capitalize
                 |> text
@@ -871,7 +869,7 @@ recipeBlock : Model -> Recipe -> Element.Element Msg
 recipeBlock model recipe =
     let
         viable =
-            missingIngredients model.pedantic model.availableMaterials recipe |> Set.Any.isEmpty
+            missingIngredients model.pedantic model.availableMaterials recipe |> Set.isEmpty
 
         selected =
             model.selectedRecipe == Just recipe
@@ -940,7 +938,7 @@ listIngredientInBlock : Model -> Ingredient -> Element.Element Msg
 listIngredientInBlock model ingredient =
     el
         (if
-            Set.Any.member (aliasMaterial model.pedantic ingredient.material)
+            Set.member (aliasMaterial model.pedantic ingredient.material).name
                 model.availableMaterials
          then
             []
