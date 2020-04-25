@@ -255,12 +255,9 @@ update msg model =
         MoveUp ->
             let
                 selected =
-                    case model.selectedRecipe of
-                        Just r ->
-                            getNext (List.reverse model.recipes) r
-
-                        Nothing ->
-                            List.head model.recipes
+                    model.selectedRecipe
+                        |> Maybe.map (\r -> getNext (List.reverse model.recipes) r)
+                        |> Maybe.withDefault (List.head model.recipes)
             in
             ( { model
                 | selectedRecipe = selected
@@ -276,12 +273,9 @@ update msg model =
         MoveDown ->
             let
                 selected =
-                    case model.selectedRecipe of
-                        Just r ->
-                            getNext model.recipes r
-
-                        Nothing ->
-                            List.head model.recipes
+                    model.selectedRecipe
+                        |> Maybe.map (\r -> getNext model.recipes r)
+                        |> Maybe.withDefault (List.head model.recipes)
             in
             ( { model
                 | selectedRecipe = selected
