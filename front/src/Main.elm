@@ -3,6 +3,7 @@ port module Main exposing (Msg(..), main, setDark, update, view)
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
+import Browser.Navigation as Nav
 import Data exposing (Glass(..), Ingredient, Material, MaterialType(..), Recipe, SuperMaterial(..), Video(..), recipes)
 import Element exposing (Element, alignTop, column, el, fill, height, html, padding, paddingEach, paragraph, row, shrink, spacing, text, width)
 import Element.Background
@@ -11,7 +12,7 @@ import Element.Events exposing (onClick)
 import Element.Font as Font exposing (bold, strike)
 import Element.Input as Input
 import Element.Region
-import Html exposing (Html, details, iframe, label, option, select, summary)
+import Html exposing (details, iframe, label, option, select, summary)
 import Html.Attributes exposing (value)
 import Html.Events
 import Http
@@ -24,6 +25,7 @@ import Slug
 import Svg exposing (path, svg)
 import Svg.Attributes exposing (d, stroke, strokeWidth, viewBox)
 import Task
+import Url exposing (Url)
 
 
 
@@ -82,6 +84,7 @@ type alias Model =
     , countedMaterials : List MaterialsGroup
     , device : Device
     , tab : Tab
+    , key : Nav.Key
     }
 
 
@@ -103,6 +106,8 @@ type Msg
     | GetMagicLink
     | SetEmail String
     | SetTab Tab
+    | ChangedUrl Url
+    | ClickedLink Browser.UrlRequest
 
 
 
@@ -196,6 +201,19 @@ edges =
     }
 
 
+selectCmd : Nav.Key -> Maybe Recipe -> Cmd Msg
+selectCmd key selected =
+    case selected of
+        Just r ->
+            Cmd.batch
+                [ Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug r))
+                , Nav.replaceUrl key ("#" ++ recipeSlug r)
+                ]
+
+        Nothing ->
+            Cmd.none
+
+
 
 -- Application loop
 
@@ -213,7 +231,7 @@ update msg model =
                         Just recipe
                 , tab = TDetail
               }
-            , Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug recipe))
+            , selectCmd model.key (Just recipe)
             )
 
         SetUnits units ->
@@ -262,12 +280,7 @@ update msg model =
             ( { model
                 | selectedRecipe = selected
               }
-            , case selected of
-                Just r ->
-                    Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug r))
-
-                Nothing ->
-                    Cmd.none
+            , selectCmd model.key selected
             )
 
         MoveDown ->
@@ -280,12 +293,7 @@ update msg model =
             ( { model
                 | selectedRecipe = selected
               }
-            , case selected of
-                Just r ->
-                    Task.attempt (\_ -> Ignored) (Dom.focus (recipeSlug r))
-
-                Nothing ->
-                    Cmd.none
+            , selectCmd model.key selected
             )
 
         ToggleIngredient material checked ->
@@ -368,6 +376,12 @@ update msg model =
         GotOk _ ->
             ( model, Cmd.none )
 
+        ChangedUrl _ ->
+            ( model, Cmd.none )
+
+        ClickedLink _ ->
+            ( model, Cmd.none )
+
 
 resizeHandler : Int -> Int -> Msg
 resizeHandler w _ =
@@ -433,12 +447,21 @@ loadInventory =
         }
 
 
-init : Bool -> ( Model, Cmd Msg )
-init isMobile =
+init : Bool -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init isMobile url key =
     ( { recipes = recipes
       , materials = []
       , countedMaterials = []
-      , selectedRecipe = Nothing
+      , selectedRecipe =
+            List.filter
+                (\r ->
+                    recipeSlug r
+                        == (url.fragment
+                                |> Maybe.withDefault ""
+                           )
+                )
+                recipes
+                |> List.head
       , availableMaterials = Set.Any.empty materialKey
       , units = Ml
       , mode = Normal
@@ -448,6 +471,7 @@ init isMobile =
       , syncing = False
       , sentEmail = False
       , email = ""
+      , key = key
       , device =
             if isMobile then
                 Mobile
@@ -466,11 +490,13 @@ port setDark : Bool -> Cmd msg
 
 main : Program Bool Model Msg
 main =
-    Browser.element
+    Browser.application
         { init = init
-        , update = update
         , view = view
+        , update = update
         , subscriptions = subscriptions
+        , onUrlChange = ChangedUrl
+        , onUrlRequest = ClickedLink
         }
 
 
@@ -1288,7 +1314,7 @@ gridView model =
         |> html
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
     let
         mWidth : Int -> Element.Attribute Msg
@@ -1416,123 +1442,132 @@ view model =
                        )
                 )
     in
-    Element.layout
-        [ Font.size 13
-        , Font.color
-            (if model.dark then
-                white
+    { title =
+        "Old Fashioned"
+            ++ (model.selectedRecipe
+                    |> Maybe.map (\r -> ": " ++ r.name)
+                    |> Maybe.withDefault ""
+               )
+    , body =
+        [ Element.layout
+            [ Font.size 13
+            , Font.color
+                (if model.dark then
+                    white
 
-             else
-                black
-            )
-        , Font.family
-            [ Font.typeface "IBM Plex Mono"
-            , Font.typeface "SFMono-Regular"
-            , Font.typeface "Consolas"
-            , Font.typeface "Liberation Mono"
-            , Font.typeface "Menlo"
-            , Font.monospace
-            ]
-        , width fill
-        , height fill
-        ]
-        (column
-            [ width fill
+                 else
+                    black
+                )
+            , Font.family
+                [ Font.typeface "IBM Plex Mono"
+                , Font.typeface "SFMono-Regular"
+                , Font.typeface "Consolas"
+                , Font.typeface "Liberation Mono"
+                , Font.typeface "Menlo"
+                , Font.monospace
+                ]
+            , width fill
             , height fill
-            , if model.device == Mobile then
-                spacing 20
-
-              else
-                spacing 0
             ]
-            [ if model.device == Desktop then
-                header model
+            (column
+                [ width fill
+                , height fill
+                , if model.device == Mobile then
+                    spacing 20
 
-              else
-                Element.none
-            , if model.device == Mobile then
-                row
-                    [ Border.widthEach { edges | bottom = 1 }
-                    , Element.spaceEvenly
-                    , padding 20
-                    , width fill
-                    ]
-                    [ Input.button
-                        [ Font.alignLeft
-                        , if model.tab == TMaterials then
-                            Font.underline
+                  else
+                    spacing 0
+                ]
+                [ if model.device == Desktop then
+                    header model
 
-                          else
-                            Font.unitalicized
+                  else
+                    Element.none
+                , if model.device == Mobile then
+                    row
+                        [ Border.widthEach { edges | bottom = 1 }
+                        , Element.spaceEvenly
+                        , padding 20
+                        , width fill
                         ]
-                        { onPress = Just (SetTab TMaterials)
-                        , label = text "Ingredients"
-                        }
-                    , Input.button
-                        [ Font.alignLeft
-                        , if model.tab == TCocktails then
-                            Font.underline
+                        [ Input.button
+                            [ Font.alignLeft
+                            , if model.tab == TMaterials then
+                                Font.underline
 
-                          else
-                            Font.unitalicized
+                              else
+                                Font.unitalicized
+                            ]
+                            { onPress = Just (SetTab TMaterials)
+                            , label = text "Ingredients"
+                            }
+                        , Input.button
+                            [ Font.alignLeft
+                            , if model.tab == TCocktails then
+                                Font.underline
+
+                              else
+                                Font.unitalicized
+                            ]
+                            { onPress = Just (SetTab TCocktails)
+                            , label = text "Cocktails"
+                            }
+                        , Input.button
+                            [ Font.alignLeft
+                            , if model.tab == TDetail then
+                                Font.underline
+
+                              else
+                                Font.unitalicized
+                            ]
+                            { onPress = Just (SetTab TDetail)
+                            , label = text "Detail"
+                            }
+                        , Input.button
+                            [ Font.alignLeft
+                            , if model.tab == TSettings then
+                                Font.underline
+
+                              else
+                                Font.unitalicized
+                            ]
+                            { onPress = Just (SetTab TSettings)
+                            , label = text "*"
+                            }
                         ]
-                        { onPress = Just (SetTab TCocktails)
-                        , label = text "Cocktails"
-                        }
-                    , Input.button
-                        [ Font.alignLeft
-                        , if model.tab == TDetail then
-                            Font.underline
 
-                          else
-                            Font.unitalicized
+                  else
+                    Element.none
+                , if model.mode == Grid then
+                    gridView model
+
+                  else if model.device == Mobile then
+                    el [ Element.scrollbarY, height fill, width fill ]
+                        (case model.tab of
+                            TMaterials ->
+                                materials
+
+                            TCocktails ->
+                                recipes
+
+                            TDetail ->
+                                detail
+
+                            TSettings ->
+                                header model
+                        )
+
+                  else
+                    row
+                        [ width fill
+                        , height fill
+                        , Element.scrollbarY
                         ]
-                        { onPress = Just (SetTab TDetail)
-                        , label = text "Detail"
-                        }
-                    , Input.button
-                        [ Font.alignLeft
-                        , if model.tab == TSettings then
-                            Font.underline
-
-                          else
-                            Font.unitalicized
+                        [ materials
+                        , recipes
+                        , detail
                         ]
-                        { onPress = Just (SetTab TSettings)
-                        , label = text "*"
-                        }
-                    ]
-
-              else
-                Element.none
-            , if model.mode == Grid then
-                gridView model
-
-              else if model.device == Mobile then
-                el [ Element.scrollbarY, height fill, width fill ]
-                    (case model.tab of
-                        TMaterials ->
-                            materials
-
-                        TCocktails ->
-                            recipes
-
-                        TDetail ->
-                            detail
-
-                        TSettings ->
-                            header model
-                    )
-
-              else
-                row
-                    [ width fill
-                    , height fill
-                    , Element.scrollbarY
-                    ]
-                    [ materials
-                    , recipes
-                    , detail
-                    ]
-            ]
-        )
+                ]
+            )
+        ]
+    }
