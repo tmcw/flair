@@ -559,7 +559,7 @@ deriveMaterials model =
                 unsortedInsufficient
 
         alphabetical =
-            List.sortBy (\recipe -> recipe.name) model.recipes
+            List.sortBy .name model.recipes
 
         orderedRecipes =
             case model.sort of
