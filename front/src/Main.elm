@@ -379,8 +379,13 @@ update msg model =
         ChangedUrl _ ->
             ( model, Cmd.none )
 
-        ClickedLink _ ->
-            ( model, Cmd.none )
+        ClickedLink urlRequest ->
+            case urlRequest of
+                Browser.Internal _ ->
+                    ( model, Cmd.none )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
 
 
 resizeHandler : Int -> Int -> Msg
