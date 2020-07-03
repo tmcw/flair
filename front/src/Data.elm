@@ -2241,11 +2241,32 @@ recipes =
       , glass = Cocktail
       , video = Just (Epicurious "19:51")
       }
+    , { name = "Artillery"
+      , ingredients =
+            [ ingredient sweetRedVermouth (Tsp 1.5)
+            , ingredient gin (CL 4.5)
+            , ingredient angosturaBitters (Dash 2)
+            ]
+      , description = """Stir all ingredients with ice and strain into a cocktail glass."""
+      , glass = Cocktail
+      , video = Nothing
+      }
+    , { name = "Whiskey fix"
+      , ingredients =
+            [ ingredient lemonJuice (CL 2)
+            , ingredient simpleSyrup (CL 2)
+            , ingredient whiskey (CL 6)
+            , ingredient lemon (Wedge 1)
+            , ingredient cherry (Whole 1)
+            ]
+      , description = """Shake in a cocktail shaker with a small piece of ice. Drain into the glass and top with crushed ice and garnish with a lemon wedge and a luxardo cherry."""
+      , glass = OldFashioned
+      , video = Just (Epicurious "7:11")
+      }
     ]
 
 
 
--- Whiskey Fix 7:11
 -- Presbyterian 8:58
 -- Blinker 9:58
 -- Improved Whiskey Cocktail 10:41
