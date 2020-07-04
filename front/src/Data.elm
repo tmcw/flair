@@ -1103,7 +1103,7 @@ recipes =
     , { name = "Daiquiri"
       , ingredients =
             [ ingredient whiteRum (CL 4.5)
-            , ingredient lemonJuice (CL 2.5)
+            , ingredient limeJuice (CL 2.5)
             , ingredient simpleSyrup (CL 1.5)
             ]
       , description = """Pour all ingredients into shaker with ice cubes. Shake well. Double Strain in chilled cocktail glass."""
