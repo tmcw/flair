@@ -1954,7 +1954,7 @@ recipes =
 
     -- https://en.wikipedia.org/wiki/Bee's_Knees_(cocktail)
     -- https://iba-world.com/new-era-drinks/bees-knees/
-    , { name = "Bee’s nees"
+    , { name = "Bee’s knees"
       , ingredients =
             [ ingredient londonDryGin (CL 5.25) -- Just “dry gin”
             , ingredient honeySyrup (Tsp 2)
