@@ -68,14 +68,3 @@ So a recipe looks like this, and goes in a long list in Data.elm
 ```
 
 Really, making recipes, Elm will usually tell you exactly what's wrong, which is really neat.
-
-## Things!
-
-I'm open to all sorts of PRs. Obviously, drink recipes, but also functionality etc! And if you have
-any questions, feel free to open an issue or DM me at @tmcw.
-
-I really would love to have storage of what ingredients you have, but ran into a few gotchas as I did:
-
-- The clearest way would be localStorage, but [I'd need to use ports for that](https://guide.elm-lang.org/interop/ports.html) and it seems un-Elmish
-- Other than that, there's server storage. Was considering a Zeit + Webauthn + Google Cloud SQL thing for this,
-  but not sure if it's possible to run Cloud SQL cheaply, and Webauthn is pretty complicated.
