@@ -14,7 +14,7 @@
             "elm/svg": "1.0.1",
             "elm/url": "1.0.0",
             "hecrj/elm-slug": "1.0.2",
-            "mdgriffith/elm-ui": "1.1.5",
+            "mdgriffith/elm-ui": "1.1.8",
             "turboMaCk/any-set": "1.4.0"
         },
         "indirect": {
@@ -23,7 +23,7 @@
             "elm/regex": "1.0.0",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.2",
-            "turboMaCk/any-dict": "2.3.0"
+            "turboMaCk/any-dict": "2.4.0"
         }
     },
     "test-dependencies": {
