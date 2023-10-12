@@ -1,7 +1,0 @@
-{
-  "version": 2,
-  "routes": [
-    { "src": "/api/(.*)", "dest": "https://tmcw.builtwithdark.com/$1" },
-    { "src": "/.*", "dest": "/build" }
-  ]
-}
